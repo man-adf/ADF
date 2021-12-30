@@ -21,6 +21,9 @@
 						"datasetParameters": {
 							"PartitionDensRank": {
 								"tableName": "PartitionDensRank"
+							},
+							"Partition": {
+								"tableName": "Part"
 							}
 						}
 					},
