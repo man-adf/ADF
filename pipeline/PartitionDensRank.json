@@ -23,7 +23,7 @@
 								"tableName": "PartitionDensRank"
 							},
 							"Partition": {
-								"tableName": "Part"
+								"tableName": "Partition"
 							}
 						}
 					},
