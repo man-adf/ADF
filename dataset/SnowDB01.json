@@ -1,0 +1,23 @@
+{
+	"name": "SnowDB01",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sfDB01",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"tableName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "SnowflakeTable",
+		"schema": [],
+		"typeProperties": {
+			"table": {
+				"value": "@dataset().tableName",
+				"type": "Expression"
+			}
+		}
+	}
+}
