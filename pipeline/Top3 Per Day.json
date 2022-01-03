@@ -1,0 +1,9 @@
+{
+	"name": "Top3 Per Day",
+	"properties": {
+		"folder": {
+			"name": "Prep"
+		},
+		"annotations": []
+	}
+}
