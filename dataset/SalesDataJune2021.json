@@ -16,25 +16,32 @@
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
+			"firstRowAsHeader": true,
 			"quoteChar": "\""
 		},
 		"schema": [
 			{
+				"name": "SalesOrderID",
 				"type": "String"
 			},
 			{
+				"name": "OrderDate",
 				"type": "String"
 			},
 			{
+				"name": "SubTotal",
 				"type": "String"
 			},
 			{
+				"name": "TaxAmt",
 				"type": "String"
 			},
 			{
+				"name": "Freight",
 				"type": "String"
 			},
 			{
+				"name": "TotalDue",
 				"type": "String"
 			}
 		]
