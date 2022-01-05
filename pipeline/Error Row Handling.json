@@ -1,6 +1,40 @@
 {
 	"name": "Error Row Handling",
 	"properties": {
+		"activities": [
+			{
+				"name": "Data flow1",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "ErrorRowHandling",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"SalesDataBR": {
+								"tableName": " SalesDataBR"
+							},
+							"SalesDataGR": {
+								"tableName": " SalesDataGR"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
 		"folder": {
 			"name": "Real Life Scenarios"
 		},
