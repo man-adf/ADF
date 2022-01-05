@@ -1,5 +1,5 @@
 {
-	"name": "UnionBranch",
+	"name": "Error Row Handling",
 	"properties": {
 		"activities": [
 			{
@@ -16,26 +16,14 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "UnionBranch",
+						"referenceName": "ErrorRowHandling",
 						"type": "DataFlowReference",
 						"datasetParameters": {
-							"Group1": {
-								"fileName": "Group1.txt"
+							"SalesDataBR": {
+								"tableName": "SalesDataBR"
 							},
-							"Group2": {
-								"fileName": "Group2.txt"
-							},
-							"Group3": {
-								"fileName": "Group3.txt"
-							},
-							"OrdersNorthwind": {
-								"tableName": "Orders_Northwind"
-							},
-							"UnionDB": {
-								"tableName": "UnionDB"
-							},
-							"GroupUnion": {
-								"folder": "Union"
+							"SalesDataGR": {
+								"tableName": "SalesDataGR"
 							}
 						}
 					},
@@ -48,10 +36,8 @@
 			}
 		],
 		"folder": {
-			"name": "Azure"
+			"name": "Real Life Scenarios"
 		},
-		"annotations": [],
-		"lastPublishTime": "2021-12-30T15:29:15Z"
-	},
-	"type": "Microsoft.DataFactory/factories/pipelines"
+		"annotations": []
+	}
 }

@@ -1,5 +1,5 @@
 {
-	"name": "JsonLkp",
+	"name": "SalesDataJune2021",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "msa01",
@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "JsonLkp.csv",
+				"fileName": "SalesData June-2021.csv",
 				"folderPath": "Bronze",
 				"fileSystem": "con1"
 			},
@@ -21,15 +21,29 @@
 		},
 		"schema": [
 			{
+				"name": "SalesOrderID",
 				"type": "String"
 			},
 			{
+				"name": "OrderDate",
 				"type": "String"
 			},
 			{
+				"name": "SubTotal",
+				"type": "String"
+			},
+			{
+				"name": "TaxAmt",
+				"type": "String"
+			},
+			{
+				"name": "Freight",
+				"type": "String"
+			},
+			{
+				"name": "TotalDue",
 				"type": "String"
 			}
 		]
-	},
-	"type": "Microsoft.DataFactory/factories/datasets"
+	}
 }

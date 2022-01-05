@@ -1,5 +1,5 @@
 {
-	"name": "UnionBranch",
+	"name": "BlobToSnow",
 	"properties": {
 		"activities": [
 			{
@@ -16,26 +16,11 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "UnionBranch",
+						"referenceName": "Gen2ToSfDB",
 						"type": "DataFlowReference",
 						"datasetParameters": {
-							"Group1": {
-								"fileName": "Group1.txt"
-							},
-							"Group2": {
-								"fileName": "Group2.txt"
-							},
-							"Group3": {
-								"fileName": "Group3.txt"
-							},
-							"OrdersNorthwind": {
-								"tableName": "Orders_Northwind"
-							},
-							"UnionDB": {
-								"tableName": "UnionDB"
-							},
-							"GroupUnion": {
-								"folder": "Union"
+							"SnowDB01": {
+								"tableName": "EmpInfo"
 							}
 						}
 					},
@@ -48,10 +33,8 @@
 			}
 		],
 		"folder": {
-			"name": "Azure"
+			"name": "SnowFlake"
 		},
-		"annotations": [],
-		"lastPublishTime": "2021-12-30T15:29:15Z"
-	},
-	"type": "Microsoft.DataFactory/factories/pipelines"
+		"annotations": []
+	}
 }

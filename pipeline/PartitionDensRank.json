@@ -21,6 +21,9 @@
 						"datasetParameters": {
 							"PartitionDensRank": {
 								"tableName": "PartitionDensRank"
+							},
+							"Partition": {
+								"tableName": "Partition"
 							}
 						}
 					},
@@ -32,6 +35,9 @@
 				}
 			}
 		],
+		"folder": {
+			"name": "Azure"
+		},
 		"annotations": [],
 		"lastPublishTime": "2021-12-30T15:29:15Z"
 	},

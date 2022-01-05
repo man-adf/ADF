@@ -1,0 +1,45 @@
+{
+	"name": "ErrorRowHandling",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SalesDataJune2021",
+						"type": "DatasetReference"
+					},
+					"name": "SalesDataJune2021"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ParaDB01",
+						"type": "DatasetReference"
+					},
+					"name": "SalesDataBR"
+				},
+				{
+					"dataset": {
+						"referenceName": "ParaDB01",
+						"type": "DatasetReference"
+					},
+					"name": "SalesDataGR"
+				}
+			],
+			"transformations": [
+				{
+					"name": "ConditionalSplit1"
+				},
+				{
+					"name": "SourceFileName1"
+				},
+				{
+					"name": "SourceFileName2"
+				}
+			],
+			"script": "source(output(\n\t\tSalesOrderID as string,\n\t\tOrderDate as string,\n\t\tSubTotal as string,\n\t\tTaxAmt as string,\n\t\tFreight as string,\n\t\tTotalDue as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SalesDataJune2021\nSalesDataJune2021 split(isNull(toDate(OrderDate, 'yyyy-MM-dd')),\n\tdisjoint: false) ~> ConditionalSplit1@(ErrorRows, GoodRows)\nConditionalSplit1@ErrorRows derive(FileName = 'SalesData June-2021.csv') ~> SourceFileName1\nConditionalSplit1@GoodRows derive(SalesOrderID = toInteger(SalesOrderID),\n\t\tOrderDate = toDate(OrderDate, 'yyyy-MM-dd'),\n\t\tSubTotal = toDecimal(SubTotal, 10, 2),\n\t\tTaxAmt = toDecimal(SubTotal, 10, 2),\n\t\tFreight = toDecimal(Freight, 10, 2),\n\t\tTotalDue = toDecimal(TotalDue, 10, 2),\n\t\tFileName = 'SalesData June-2021.csv') ~> SourceFileName2\nSourceFileName1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SalesDataBR\nSourceFileName2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SalesDataGR"
+		}
+	}
+}
