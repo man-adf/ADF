@@ -7,7 +7,7 @@
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "Error Row Handling",
+					"referenceName": "ErrorRowHandling RecordPipelineRun",
 					"type": "PipelineReference"
 				}
 			}
