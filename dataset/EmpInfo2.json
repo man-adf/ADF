@@ -21,18 +21,19 @@
 		},
 		"schema": [
 			{
+				"name": "EmpName",
 				"type": "String"
 			},
 			{
+				"name": "Gender",
 				"type": "String"
 			},
 			{
+				"name": "Salary",
 				"type": "String"
 			},
 			{
-				"type": "String"
-			},
-			{
+				"name": "Dept",
 				"type": "String"
 			}
 		]
