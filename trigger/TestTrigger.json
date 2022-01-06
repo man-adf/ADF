@@ -1,0 +1,25 @@
+{
+	"name": "TestTrigger",
+	"properties": {
+		"description": "Created for data logging purpose",
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Error Row Handling",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 15,
+				"startTime": "2022-01-06T11:23:00",
+				"timeZone": "Eastern Standard Time"
+			}
+		}
+	}
+}
