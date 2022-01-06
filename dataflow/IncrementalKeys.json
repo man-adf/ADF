@@ -1,0 +1,23 @@
+{
+	"name": "IncrementalKeys",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmpInfo1",
+						"type": "DatasetReference"
+					},
+					"name": "EmpInfo1"
+				},
+				{
+					"name": "EmpInfo2"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"script": "source(output(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfo1\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false) ~> EmpInfo2"
+		}
+	}
+}
