@@ -1,0 +1,42 @@
+{
+	"name": "IncrementalKeys",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmpInfo1",
+						"type": "DatasetReference"
+					},
+					"name": "EmpInfo1"
+				},
+				{
+					"dataset": {
+						"referenceName": "EmpInfo2",
+						"type": "DatasetReference"
+					},
+					"name": "EmpInfo2"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ParaCon1",
+						"type": "DatasetReference"
+					},
+					"name": "EmpInfo"
+				}
+			],
+			"transformations": [
+				{
+					"name": "EmpID"
+				},
+				{
+					"name": "Union1"
+				}
+			],
+			"script": "source(output(\n\t\tEmpID as short,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as short,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfo1\nsource(output(\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as short,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfo2\nEmpInfo2 keyGenerate(output(EmpID as long),\n\tstartAt: 7L) ~> EmpID\nEmpInfo1, EmpID union(byName: true)~> Union1\nUnion1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string\n\t),\n\tpartitionFileNames:['EmpInfoUnion.csv'],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> EmpInfo"
+		}
+	}
+}

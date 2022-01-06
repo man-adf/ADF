@@ -1,13 +1,12 @@
 {
-	"name": "TestTrigger",
+	"name": "PipelineLogTrigger",
 	"properties": {
-		"description": "Created for data logging purpose",
 		"annotations": [],
-		"runtimeState": "Stopped",
+		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "ErrorRowHandling RecordPipelineRun",
+					"referenceName": "DailyPipelineLogs",
 					"type": "PipelineReference"
 				}
 			}
@@ -16,8 +15,8 @@
 		"typeProperties": {
 			"recurrence": {
 				"frequency": "Minute",
-				"interval": 15,
-				"startTime": "2022-01-06T11:23:00",
+				"interval": 5,
+				"startTime": "2022-01-06T14:10:00",
 				"timeZone": "Eastern Standard Time"
 			}
 		}
