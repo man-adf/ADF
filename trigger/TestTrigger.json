@@ -3,7 +3,7 @@
 	"properties": {
 		"description": "Created for data logging purpose",
 		"annotations": [],
-		"runtimeState": "Started",
+		"runtimeState": "Stopped",
 		"pipelines": [
 			{
 				"pipelineReference": {
