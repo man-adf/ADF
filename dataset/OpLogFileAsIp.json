@@ -1,5 +1,5 @@
 {
-	"name": "OpLogFile",
+	"name": "OpLogFileAsIp",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "msa01",
