@@ -7,6 +7,30 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mdf001"
 		},
+		"DB01_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'DB01'"
+		},
+		"DB02_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'DB02'"
+		},
+		"DBS_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'DBS'"
+		},
+		"msa01_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'msa01'"
+		},
+		"msa01_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://ms01.dfs.core.windows.net"
+		},
+		"sfDB01_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'sfDB01'"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"

@@ -243,6 +243,84 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "Stored procedure1",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Data flow1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[sp_PipelineExecData]",
+							"storedProcedureParameters": {
+								"adfName": {
+									"value": {
+										"value": "@pipeline().DataFactory",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"pipelineName": {
+									"value": {
+										"value": "@pipeline().Pipeline",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"runID": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"triggerID": {
+									"value": {
+										"value": "@pipeline().TriggerId",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"triggerName": {
+									"value": {
+										"value": "@pipeline().TriggerName",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"triggerTime": {
+									"value": {
+										"value": "@pipeline().TriggerTime",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"triggerType": {
+									"value": {
+										"value": "@pipeline().TriggerType",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "DB01",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
@@ -255,7 +333,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/ErrorRowHandling')]"
+				"[concat(variables('factoryId'), '/dataflows/ErrorRowHandling')]",
+				"[concat(variables('factoryId'), '/linkedServices/DB01')]"
 			]
 		},
 		{
@@ -3056,7 +3135,7 @@
 							"name": "SourceFileName2"
 						}
 					],
-					"script": "source(output(\n\t\tSalesOrderID as string,\n\t\tOrderDate as string,\n\t\tSubTotal as string,\n\t\tTaxAmt as string,\n\t\tFreight as string,\n\t\tTotalDue as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SalesDataJune2021\nSalesDataJune2021 split(isNull(toDate(OrderDate, 'yyyy-MM-dd')),\n\tdisjoint: false) ~> ConditionalSplit1@(ErrorRows, GoodRows)\nConditionalSplit1@ErrorRows derive(FileName = 'SalesData June-2021.csv') ~> SourceFileName1\nConditionalSplit1@GoodRows derive(SalesOrderID = toInteger(SalesOrderID),\n\t\tOrderDate = toDate(OrderDate, 'yyyy-MM-dd'),\n\t\tSubTotal = toDecimal(SubTotal, 10, 2),\n\t\tTaxAmt = toDecimal(SubTotal, 10, 2),\n\t\tFreight = toDecimal(Freight, 10, 2),\n\t\tTotalDue = toDecimal(TotalDue, 10, 2),\n\t\tFileName = 'SalesData June-2021.csv') ~> SourceFileName2\nSourceFileName1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SalesDataBR\nSourceFileName2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SalesDataGR"
+					"script": "source(output(\n\t\tSalesOrderID as string,\n\t\tOrderDate as string,\n\t\tSubTotal as string,\n\t\tTaxAmt as string,\n\t\tFreight as string,\n\t\tTotalDue as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SalesDataJune2021\nSalesDataJune2021 split(isNull(toDate(OrderDate, 'yyyy-MM-dd')),\n\tdisjoint: false) ~> ConditionalSplit1@(ErrorRows, GoodRows)\nConditionalSplit1@ErrorRows derive(FileName = 'SalesData June-2021.csv') ~> SourceFileName1\nConditionalSplit1@GoodRows derive(SalesOrderID = toInteger(SalesOrderID),\n\t\tOrderDate = toDate(OrderDate, 'yyyy-MM-dd'),\n\t\tSubTotal = toDecimal(SubTotal, 10, 2),\n\t\tTaxAmt = toDecimal(TaxAmt, 10, 2),\n\t\tFreight = toDecimal(Freight, 10, 2),\n\t\tTotalDue = toDecimal(TotalDue, 10, 2),\n\t\tFileName = 'SalesData June-2021.csv') ~> SourceFileName2\nSourceFileName1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SalesDataBR\nSourceFileName2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SalesDataGR"
 				}
 			},
 			"dependsOn": [
@@ -3599,6 +3678,37 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/EmpInfo')]",
 				"[concat(variables('factoryId'), '/datasets/ParaDB01')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TestTrigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Created for data logging purpose",
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Error Row Handling",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2022-01-06T11:23:00",
+						"timeZone": "Eastern Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Error Row Handling')]"
 			]
 		}
 	]
