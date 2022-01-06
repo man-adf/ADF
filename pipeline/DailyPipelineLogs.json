@@ -1,0 +1,87 @@
+{
+	"name": "DailyPipelineLogs",
+	"properties": {
+		"activities": [
+			{
+				"name": "5 Sec",
+				"type": "Wait",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 5
+				}
+			},
+			{
+				"name": "logFileName",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "5 Sec",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "logFileName",
+					"value": {
+						"value": "@concat(formatDateTime(utcnow(),'yyyyMMdd'),'_log.csv')\r\n",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "logFileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "OpLogFileAsIp",
+						"type": "DatasetReference",
+						"parameters": {
+							"logFileName": {
+								"value": "@variables('logFileName')",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"exists"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			}
+		],
+		"variables": {
+			"logFileName": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Real Life Scenarios"
+		},
+		"annotations": []
+	}
+}
