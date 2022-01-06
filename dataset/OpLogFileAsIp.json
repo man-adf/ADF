@@ -5,11 +5,20 @@
 			"referenceName": "msa01",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"logFileName": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().logFileName",
+					"type": "Expression"
+				},
 				"folderPath": "LogFiles/Logs",
 				"fileSystem": "con2"
 			},
