@@ -1,0 +1,32 @@
+{
+	"name": "WindowsCumulativeAdd",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmpInfo",
+						"type": "DatasetReference"
+					},
+					"name": "EmpInfoCsv"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ParaDB01",
+						"type": "DatasetReference"
+					},
+					"name": "Partition"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Window1"
+				}
+			],
+			"script": "source(output(\n\t\tEmpID as short,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as short,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCsv\nEmpInfoCsv window(asc(EmpID, true),\n\tRunningTotal = sum(Salary)) ~> Window1\nWindow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tEmpID,\n\t\tEmpName,\n\t\tGender,\n\t\tDept,\n\t\tSalary\n\t)) ~> Partition"
+		}
+	}
+}
