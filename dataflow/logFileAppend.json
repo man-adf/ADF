@@ -9,7 +9,7 @@
 						"referenceName": "Temp",
 						"type": "DatasetReference"
 					},
-					"name": "dummy"
+					"name": "Temp"
 				},
 				{
 					"dataset": {
@@ -39,7 +39,7 @@
 					"name": "Union1"
 				}
 			],
-			"script": "parameters{\n\tAdfName as string,\n\tPipelineName as string,\n\tTriggerName as string,\n\tRunID as string,\n\tTriggerID as string,\n\tTriggerTime as string,\n\tTriggerType as string,\n\tStatus as string,\n\tlogFilename as string\n}\nsource(output(\n\t\tColumn_1 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> dummy\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:[('LogFiles/Logs/' + $logFilename)]) ~> TodaysLogFile\ndummy derive(AdfName = $AdfName,\n\t\tPipelineName = $PipelineName,\n\t\tTriggerName = $TriggerName,\n\t\tRunID = $RunID,\n\t\tTriggerID = $TriggerID,\n\t\tTriggerTime = $TriggerTime,\n\t\tTriggerType = $TriggerType,\n\t\tStatus = $Status) ~> LogColumns\nLogColumns select(mapColumn(\n\t\tAdfName,\n\t\tPipelineName,\n\t\tTriggerName,\n\t\tRunID,\n\t\tTriggerID,\n\t\tTriggerTime,\n\t\tTriggerType,\n\t\tStatus\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveTemp\nRemoveTemp, TodaysLogFile union(byName: true)~> Union1\nUnion1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:[($logFilename)],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> OpLogFile"
+			"script": "parameters{\n\tAdfName as string,\n\tPipelineName as string,\n\tTriggerName as string,\n\tRunID as string,\n\tTriggerID as string,\n\tTriggerTime as string,\n\tTriggerType as string,\n\tStatus as string,\n\tlogFilename as string\n}\nsource(output(\n\t\tColumn_1 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Temp\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:[('LogFiles/Logs/' + $logFilename)]) ~> TodaysLogFile\nTemp derive(AdfName = $AdfName,\n\t\tPipelineName = $PipelineName,\n\t\tTriggerName = $TriggerName,\n\t\tRunID = $RunID,\n\t\tTriggerID = $TriggerID,\n\t\tTriggerTime = $TriggerTime,\n\t\tTriggerType = $TriggerType,\n\t\tStatus = $Status) ~> LogColumns\nLogColumns select(mapColumn(\n\t\tAdfName,\n\t\tPipelineName,\n\t\tTriggerName,\n\t\tRunID,\n\t\tTriggerID,\n\t\tTriggerTime,\n\t\tTriggerType,\n\t\tStatus\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveTemp\nRemoveTemp, TodaysLogFile union(byName: true)~> Union1\nUnion1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:[($logFilename)],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> OpLogFile"
 		}
 	}
 }
