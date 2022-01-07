@@ -12,13 +12,21 @@
 					"name": "EmpInfoCSV"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ParaCon1",
+						"type": "DatasetReference"
+					},
+					"name": "EmpInfoEmailCSV"
+				}
+			],
 			"transformations": [
 				{
 					"name": "EmailCol"
 				}
 			],
-			"script": "source(output(\n\t\tEmpID as string,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as string,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCSV\nEmpInfoCSV derive(Email = concat(EmpName,'@',Dept,'.com')) ~> EmailCol"
+			"script": "source(output(\n\t\tEmpID as string,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as string,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCSV\nEmpInfoCSV derive(Email = concat(EmpName,'@',Dept,'.com')) ~> EmailCol\nEmailCol sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string\n\t),\n\tpartitionFileNames:['EmpInfoEmail.csv'],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> EmpInfoEmailCSV"
 		}
 	}
 }
