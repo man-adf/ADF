@@ -1,0 +1,24 @@
+{
+	"name": "AraytoString",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmpInfoEmailCsv",
+						"type": "DatasetReference"
+					},
+					"name": "EmpInfoCSV"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "Aggregate1"
+				}
+			],
+			"script": "source(output(\n\t\tEmpID as short,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as short,\n\t\tDept as string,\n\t\tEmail as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCSV\nEmpInfoCSV aggregate(Emails = collect(Email)) ~> Aggregate1"
+		}
+	}
+}
