@@ -1,0 +1,24 @@
+{
+	"name": "StringConcat",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmpInfoCsv",
+						"type": "DatasetReference"
+					},
+					"name": "EmpInfoCSV"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "EmailCol"
+				}
+			],
+			"script": "source(output(\n\t\tEmpID as string,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as string,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCSV\nEmpInfoCSV derive(Email = concat(EmpName,'@',Dept,'.com')) ~> EmailCol"
+		}
+	}
+}
