@@ -13,6 +13,230 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/POD')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DB01",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "PurchaseOrderID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "PurchaseOrderDetailID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DueDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "OrderQty",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "ProductID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "UnitPrice",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "LineTotal",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "ReceivedQty",
+						"type": "decimal",
+						"precision": 8,
+						"scale": 2
+					},
+					{
+						"name": "RejectedQty",
+						"type": "decimal",
+						"precision": 8,
+						"scale": 2
+					},
+					{
+						"name": "StockedQty",
+						"type": "decimal",
+						"precision": 9,
+						"scale": 2
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "PurchaseOrderDetail"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/POH')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DB01",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "PurchaseOrderID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "RevisionNumber",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "Status",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "EmployeeID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "VendorID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ShipMethodID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "OrderDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ShipDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "SubTotal",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "TaxAmt",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "Freight",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "TotalDue",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "PurchaseOrderHeader"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ParaCon1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "msa01",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"folderName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@dataset().folderName",
+							"type": "Expression"
+						},
+						"fileSystem": "con1"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ParaCon2')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -635,6 +859,125 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ArrayToString')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Concat Funtion with Loop",
+				"activities": [
+					{
+						"name": "EmpInfoEmailCSV",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFileName": "EmpInfoEmail.csv",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ParaCon1",
+								"type": "DatasetReference",
+								"parameters": {
+									"folderName": "Bronze"
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachEmail",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "EmpInfoEmailCSV",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('EmpInfoEmailCSV').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Set tmpEmail",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "tmpEmail",
+										"value": {
+											"value": "@concat(item().Email,',',variables('Email'))",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Set Email",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Set tmpEmail",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "Email",
+										"value": {
+											"value": "@variables('tmpEmail')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"Email": {
+						"type": "String"
+					},
+					"tmpEmail": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Real Life Scenarios"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/GetMetadata Filter')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -796,7 +1139,9 @@
 				"annotations": [],
 				"lastPublishTime": "2021-12-30T15:29:14Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/GetMetadataFilter')]",
@@ -960,7 +1305,9 @@
 				"annotations": [],
 				"lastPublishTime": "2021-12-30T15:29:14Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/JsonToDeltaDBR')]",
@@ -1451,195 +1798,8 @@
 				"lastPublishTime": "2021-12-30T15:29:14Z"
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]",
 				"[concat(variables('factoryId'), '/datasets/ParaDB01')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AggrDerivedColumn')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "POH",
-								"type": "DatasetReference"
-							},
-							"name": "POH"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ParaDB01",
-								"type": "DatasetReference"
-							},
-							"name": "POFactAvg"
-						}
-					],
-					"transformations": [
-						{
-							"name": "YearMonthQuarter"
-						},
-						{
-							"name": "Avg"
-						}
-					],
-					"script": "source(output(\n\t\tPurchaseOrderID as integer,\n\t\tRevisionNumber as integer,\n\t\tStatus as integer,\n\t\tEmployeeID as integer,\n\t\tVendorID as integer,\n\t\tShipMethodID as integer,\n\t\tOrderDate as timestamp,\n\t\tShipDate as timestamp,\n\t\tSubTotal as decimal(19,4),\n\t\tTaxAmt as decimal(19,4),\n\t\tFreight as decimal(19,4),\n\t\tTotalDue as decimal(19,4),\n\t\tModifiedDate as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> POH\nPOH derive(Year = year(OrderDate),\n\t\tQuarter = case(month(OrderDate) >= 1 && month(OrderDate) <= 3, 'Q1',\r\n    month(OrderDate) >= 4 && month(OrderDate) <= 6, 'Q2',\r\n    month(OrderDate) >= 7 && month(OrderDate) <= 9, 'Q3', 'Q4'  \r\n),\n\t\tMonth = month(OrderDate)) ~> YearMonthQuarter\nYearMonthQuarter aggregate(groupBy(Year,\n\t\tQuarter,\n\t\tMonth,\n\t\tEmployeeID,\n\t\tVendorID),\n\t{Avg(SubTotal)} = avg(SubTotal),\n\t\t{Avg(TaxAmt)} = avg(TaxAmt),\n\t\t{Avg(Freight)} = avg(Freight),\n\t\t{Avg(TotalDue)} = avg(TotalDue)) ~> Avg\nAvg sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tYear,\n\t\tQuarter,\n\t\tMonth,\n\t\tEmployeeID,\n\t\tVendorID,\n\t\t{Avg(SubTotal)},\n\t\t{Avg(TaxAmt)},\n\t\t{Avg(Freight)},\n\t\t{Avg(TotalDue)}\n\t)) ~> POFactAvg"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ParaDB01')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ConditionalSplit')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "POH",
-								"type": "DatasetReference"
-							},
-							"name": "POH"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ParaDB01",
-								"type": "DatasetReference"
-							},
-							"name": "POHQ1"
-						},
-						{
-							"dataset": {
-								"referenceName": "ParaDB01",
-								"type": "DatasetReference"
-							},
-							"name": "POHQ2"
-						},
-						{
-							"dataset": {
-								"referenceName": "ParaDB01",
-								"type": "DatasetReference"
-							},
-							"name": "POHQ3"
-						},
-						{
-							"dataset": {
-								"referenceName": "ParaDB01",
-								"type": "DatasetReference"
-							},
-							"name": "POHQ4"
-						}
-					],
-					"transformations": [
-						{
-							"name": "YMQ"
-						},
-						{
-							"name": "Year2012"
-						},
-						{
-							"name": "ConditionalSplitQtr"
-						}
-					],
-					"script": "source(output(\n\t\tPurchaseOrderID as integer,\n\t\tRevisionNumber as integer,\n\t\tStatus as integer,\n\t\tEmployeeID as integer,\n\t\tVendorID as integer,\n\t\tShipMethodID as integer,\n\t\tOrderDate as timestamp,\n\t\tShipDate as timestamp,\n\t\tSubTotal as decimal(19,4),\n\t\tTaxAmt as decimal(19,4),\n\t\tFreight as decimal(19,4),\n\t\tTotalDue as decimal(19,4),\n\t\tModifiedDate as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> POH\nPOH derive(Year = year(OrderDate),\n\t\tQuarter = case(month(OrderDate) > 4, 'Q1', month(OrderDate) > 7, 'Q2',month(OrderDate) > 10, 'Q3','Q4'),\n\t\tMonth = month(OrderDate)) ~> YMQ\nYMQ filter(Year == 2012) ~> Year2012\nYear2012 split(Quarter == 'Q1',\n\tQuarter == 'Q2',\n\tQuarter == 'Q3',\n\tdisjoint: false) ~> ConditionalSplitQtr@(Q1, Q2, Q3, Q4)\nConditionalSplitQtr@Q1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> POHQ1\nConditionalSplitQtr@Q2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> POHQ2\nConditionalSplitQtr@Q3 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> POHQ3\nConditionalSplitQtr@Q4 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> POHQ4"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ParaDB01')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ErrorRowHandling')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "SalesDataJune2021",
-								"type": "DatasetReference"
-							},
-							"name": "SalesDataJune2021"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ParaDB01",
-								"type": "DatasetReference"
-							},
-							"name": "SalesDataBR"
-						},
-						{
-							"dataset": {
-								"referenceName": "ParaDB01",
-								"type": "DatasetReference"
-							},
-							"name": "SalesDataGR"
-						}
-					],
-					"transformations": [
-						{
-							"name": "ConditionalSplit1"
-						},
-						{
-							"name": "SourceFileName1"
-						},
-						{
-							"name": "SourceFileName2"
-						}
-					],
-					"script": "source(output(\n\t\tSalesOrderID as string,\n\t\tOrderDate as string,\n\t\tSubTotal as string,\n\t\tTaxAmt as string,\n\t\tFreight as string,\n\t\tTotalDue as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SalesDataJune2021\nSalesDataJune2021 split(isNull(toDate(OrderDate, 'yyyy-MM-dd')),\n\tdisjoint: false) ~> ConditionalSplit1@(ErrorRows, GoodRows)\nConditionalSplit1@ErrorRows derive(FileName = 'SalesData June-2021.csv') ~> SourceFileName1\nConditionalSplit1@GoodRows derive(SalesOrderID = toInteger(SalesOrderID),\n\t\tOrderDate = toDate(OrderDate, 'yyyy-MM-dd'),\n\t\tSubTotal = toDecimal(SubTotal, 10, 2),\n\t\tTaxAmt = toDecimal(TaxAmt, 10, 2),\n\t\tFreight = toDecimal(Freight, 10, 2),\n\t\tTotalDue = toDecimal(TotalDue, 10, 2),\n\t\tFileName = 'SalesData June-2021.csv') ~> SourceFileName2\nSourceFileName1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SalesDataBR\nSourceFileName2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SalesDataGR"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SalesDataJune2021')]",
-				"[concat(variables('factoryId'), '/datasets/ParaDB01')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Gen2ToSfDB')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "EmpInfo",
-								"type": "DatasetReference"
-							},
-							"name": "EmpInfoCSV"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "SnowDB01",
-								"type": "DatasetReference"
-							},
-							"name": "SnowDB01"
-						}
-					],
-					"transformations": [],
-					"script": "source(output(\n\t\tEmpID as string,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as string,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCSV\nEmpInfoCSV sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tstageInsert: true) ~> SnowDB01"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SnowDB01')]"
 			]
 		}
 	]

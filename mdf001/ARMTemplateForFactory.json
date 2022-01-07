@@ -90,6 +90,125 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ArrayToString')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Concat Funtion with Loop",
+				"activities": [
+					{
+						"name": "EmpInfoEmailCSV",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFileName": "EmpInfoEmail.csv",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ParaCon1",
+								"type": "DatasetReference",
+								"parameters": {
+									"folderName": "Bronze"
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachEmail",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "EmpInfoEmailCSV",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('EmpInfoEmailCSV').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Set tmpEmail",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "tmpEmail",
+										"value": {
+											"value": "@concat(item().Email,',',variables('Email'))",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Set Email",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Set tmpEmail",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "Email",
+										"value": {
+											"value": "@variables('tmpEmail')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"Email": {
+						"type": "String"
+					},
+					"tmpEmail": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Real Life Scenarios"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/BlobToSnow')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -139,6 +258,58 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/Gen2ToSfDB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ConcatColumn')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "StringConcat",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"EmpInfoCSV": {},
+									"EmpInfoEmailCSV": {
+										"folderName": "Bronze"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Real Life Scenarios"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/StringConcat')]"
 			]
 		},
 		{
@@ -204,7 +375,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DailyPipelineLogs')]",
+			"name": "[concat(parameters('factoryName'), '/DailyPipelineRunLogs')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -354,8 +525,8 @@
 												}
 											},
 											"datasetParameters": {
-												"dummy": {},
-												"sink1": {}
+												"Temp": {},
+												"OpLogFile": {}
 											}
 										},
 										"staging": {},
@@ -423,7 +594,7 @@
 												}
 											},
 											"datasetParameters": {
-												"dummy": {},
+												"Temp": {},
 												"TodaysLogFile": {
 													"logFileName": {
 														"value": "@variables('logFileName')",
@@ -2095,6 +2266,95 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DelimitedText1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "msa01",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "EmpInfoEmail.csv",
+						"folderPath": "Bronze",
+						"fileSystem": "con1"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/msa01')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DelimitedText2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "msa01",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "con1"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/msa01')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/EmpInfo')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -2212,6 +2472,55 @@
 					"quoteChar": "\""
 				},
 				"schema": [
+					{
+						"name": "EmpName",
+						"type": "String"
+					},
+					{
+						"name": "Gender",
+						"type": "String"
+					},
+					{
+						"name": "Salary",
+						"type": "String"
+					},
+					{
+						"name": "Dept",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/msa01')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/EmpInfoCsv')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "msa01",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "EmpInfo.csv",
+						"fileSystem": "con1"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "EmpID",
+						"type": "String"
+					},
 					{
 						"name": "EmpName",
 						"type": "String"
@@ -2799,6 +3108,7 @@
 					},
 					"columnDelimiter": ",",
 					"escapeChar": "\\",
+					"firstRowAsHeader": true,
 					"quoteChar": "\""
 				},
 				"schema": [
@@ -3542,36 +3852,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/PipelineLogTrigger')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "DailyPipelineLogs",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Minute",
-						"interval": 5,
-						"startTime": "2022-01-06T10:35:00",
-						"timeZone": "Eastern Standard Time"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/DailyPipelineLogs')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/AggrDerivedColumn')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -4111,6 +4391,44 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/StringConcat')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmpInfoCsv",
+								"type": "DatasetReference"
+							},
+							"name": "EmpInfoCSV"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaCon1",
+								"type": "DatasetReference"
+							},
+							"name": "EmpInfoEmailCSV"
+						}
+					],
+					"transformations": [
+						{
+							"name": "EmailCol"
+						}
+					],
+					"script": "source(output(\n\t\tEmpID as string,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as string,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCSV\nEmpInfoCSV derive(Email = concat(EmpName,'@',Dept,'.com')) ~> EmailCol\nEmailCol sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string\n\t),\n\tpartitionFileNames:['EmpInfoEmail.csv'],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> EmpInfoEmailCSV"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/EmpInfoCsv')]",
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Top3PerDay')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -4365,7 +4683,7 @@
 								"referenceName": "Temp",
 								"type": "DatasetReference"
 							},
-							"name": "dummy"
+							"name": "Temp"
 						}
 					],
 					"sinks": [
@@ -4374,7 +4692,7 @@
 								"referenceName": "OpLogFile",
 								"type": "DatasetReference"
 							},
-							"name": "sink1"
+							"name": "OpLogFile"
 						}
 					],
 					"transformations": [
@@ -4385,7 +4703,7 @@
 							"name": "RemoveTemp"
 						}
 					],
-					"script": "parameters{\n\tAdfName as string,\n\tPipelineName as string,\n\tTriggerName as string,\n\tRunID as string,\n\tTriggerID as string,\n\tTriggerTime as string,\n\tTriggerType as string,\n\tStatus as string,\n\tlogFilename as string\n}\nsource(output(\n\t\tColumn_1 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> dummy\ndummy derive(AdfName = $AdfName,\n\t\tPipelineName = $PipelineName,\n\t\tTriggerName = $TriggerName,\n\t\tRunID = $RunID,\n\t\tTriggerID = $TriggerID,\n\t\tTriggerTime = $TriggerTime,\n\t\tTriggerType = $TriggerType,\n\t\tStatus = $Status) ~> LogColumns\nLogColumns select(mapColumn(\n\t\tAdfName,\n\t\tPipelineName,\n\t\tTriggerName,\n\t\tRunID,\n\t\tTriggerID,\n\t\tTriggerTime,\n\t\tTriggerType,\n\t\tStatus\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveTemp\nRemoveTemp sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:[($logFilename)],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> sink1"
+					"script": "parameters{\n\tAdfName as string,\n\tPipelineName as string,\n\tTriggerName as string,\n\tRunID as string,\n\tTriggerID as string,\n\tTriggerTime as string,\n\tTriggerType as string,\n\tStatus as string,\n\tlogFilename as string\n}\nsource(output(\n\t\tColumn_1 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Temp\nTemp derive(AdfName = $AdfName,\n\t\tPipelineName = $PipelineName,\n\t\tTriggerName = $TriggerName,\n\t\tRunID = $RunID,\n\t\tTriggerID = $TriggerID,\n\t\tTriggerTime = $TriggerTime,\n\t\tTriggerType = $TriggerType,\n\t\tStatus = $Status) ~> LogColumns\nLogColumns select(mapColumn(\n\t\tAdfName,\n\t\tPipelineName,\n\t\tTriggerName,\n\t\tRunID,\n\t\tTriggerID,\n\t\tTriggerTime,\n\t\tTriggerType,\n\t\tStatus\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveTemp\nRemoveTemp sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:[($logFilename)],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> OpLogFile"
 				}
 			},
 			"dependsOn": [
@@ -4406,7 +4724,7 @@
 								"referenceName": "Temp",
 								"type": "DatasetReference"
 							},
-							"name": "dummy"
+							"name": "Temp"
 						},
 						{
 							"dataset": {
@@ -4436,7 +4754,7 @@
 							"name": "Union1"
 						}
 					],
-					"script": "parameters{\n\tAdfName as string,\n\tPipelineName as string,\n\tTriggerName as string,\n\tRunID as string,\n\tTriggerID as string,\n\tTriggerTime as string,\n\tTriggerType as string,\n\tStatus as string,\n\tlogFilename as string\n}\nsource(output(\n\t\tColumn_1 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> dummy\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:[('LogFiles/Logs/' + $logFilename)]) ~> TodaysLogFile\ndummy derive(AdfName = $AdfName,\n\t\tPipelineName = $PipelineName,\n\t\tTriggerName = $TriggerName,\n\t\tRunID = $RunID,\n\t\tTriggerID = $TriggerID,\n\t\tTriggerTime = $TriggerTime,\n\t\tTriggerType = $TriggerType,\n\t\tStatus = $Status) ~> LogColumns\nLogColumns select(mapColumn(\n\t\tAdfName,\n\t\tPipelineName,\n\t\tTriggerName,\n\t\tRunID,\n\t\tTriggerID,\n\t\tTriggerTime,\n\t\tTriggerType,\n\t\tStatus\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveTemp\nRemoveTemp, TodaysLogFile union(byName: true)~> Union1\nUnion1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:[($logFilename)],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> OpLogFile"
+					"script": "parameters{\n\tAdfName as string,\n\tPipelineName as string,\n\tTriggerName as string,\n\tRunID as string,\n\tTriggerID as string,\n\tTriggerTime as string,\n\tTriggerType as string,\n\tStatus as string,\n\tlogFilename as string\n}\nsource(output(\n\t\tColumn_1 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Temp\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:[('LogFiles/Logs/' + $logFilename)]) ~> TodaysLogFile\nTemp derive(AdfName = $AdfName,\n\t\tPipelineName = $PipelineName,\n\t\tTriggerName = $TriggerName,\n\t\tRunID = $RunID,\n\t\tTriggerID = $TriggerID,\n\t\tTriggerTime = $TriggerTime,\n\t\tTriggerType = $TriggerType,\n\t\tStatus = $Status) ~> LogColumns\nLogColumns select(mapColumn(\n\t\tAdfName,\n\t\tPipelineName,\n\t\tTriggerName,\n\t\tRunID,\n\t\tTriggerID,\n\t\tTriggerTime,\n\t\tTriggerType,\n\t\tStatus\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveTemp\nRemoveTemp, TodaysLogFile union(byName: true)~> Union1\nUnion1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:[($logFilename)],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> OpLogFile"
 				}
 			},
 			"dependsOn": [
