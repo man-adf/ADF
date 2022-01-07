@@ -1,5 +1,5 @@
 {
-	"name": "DailyPipelineLogs",
+	"name": "DailyPipelineRunLogs",
 	"properties": {
 		"activities": [
 			{
