@@ -121,6 +121,11 @@
 								"value": "'@{variables('Email')}'",
 								"type": "Expression"
 							}
+						},
+						"datasetParameters": {
+							"sink1": {
+								"folderName": "Silver"
+							}
 						}
 					},
 					"compute": {
