@@ -117,7 +117,7 @@
 						"referenceName": "EmailString",
 						"type": "DataFlowReference",
 						"parameters": {
-							"ABC": {
+							"StrOP": {
 								"value": "'@{variables('Email')}'",
 								"type": "Expression"
 							}
