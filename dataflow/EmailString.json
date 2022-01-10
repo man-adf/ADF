@@ -1,5 +1,5 @@
 {
-	"name": "dataflow1",
+	"name": "EmailString",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {

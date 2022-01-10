@@ -94,7 +94,7 @@
 				}
 			},
 			{
-				"name": "Data flow1",
+				"name": "EmailString",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
@@ -114,7 +114,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "dataflow1",
+						"referenceName": "EmailString",
 						"type": "DataFlowReference",
 						"parameters": {
 							"ABC": {
