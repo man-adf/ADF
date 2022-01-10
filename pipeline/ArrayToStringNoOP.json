@@ -136,11 +136,6 @@
 				}
 			}
 		],
-		"parameters": {
-			"xx": {
-				"type": "string"
-			}
-		},
 		"variables": {
 			"Email": {
 				"type": "String"

@@ -21,6 +21,7 @@
 		},
 		"schema": [
 			{
+				"name": "Test",
 				"type": "String"
 			}
 		]
