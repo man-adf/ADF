@@ -46,7 +46,7 @@
 										"tableName": "Status"
 									}
 								},
-								"firstRowOnly": false
+								"firstRowOnly": true
 							}
 						},
 						{
@@ -72,7 +72,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@equals(activity('Lookup1').output.value.Status, 'Y')",
+									"value": "@equals(activity('Lookup1').output.firstRow.Status, 'Y')",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
