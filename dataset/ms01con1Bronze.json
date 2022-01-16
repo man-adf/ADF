@@ -5,6 +5,11 @@
 			"referenceName": "msa01",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"fName": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
