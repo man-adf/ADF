@@ -99,7 +99,7 @@
 												"type": "Expression"
 											}
 										},
-										"ParaDB02": {
+										"ParaDB02dbo": {
 											"tableName": {
 												"value": "@item().name",
 												"type": "Expression"
