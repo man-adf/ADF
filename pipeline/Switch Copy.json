@@ -9,12 +9,12 @@
 				"userProperties": [],
 				"typeProperties": {
 					"on": {
-						"value": "@pipeline().parameters.folderName",
+						"value": "@pipeline().parameters.fName",
 						"type": "Expression"
 					},
 					"cases": [
 						{
-							"value": "Bronze",
+							"value": "B",
 							"activities": [
 								{
 									"name": "Bronze",
@@ -80,7 +80,7 @@
 							]
 						},
 						{
-							"value": "Filtered",
+							"value": "F",
 							"activities": [
 								{
 									"name": "Filtered",
@@ -146,7 +146,7 @@
 							]
 						},
 						{
-							"value": "Silver",
+							"value": "S",
 							"activities": [
 								{
 									"name": "Silver",
@@ -216,7 +216,7 @@
 			}
 		],
 		"parameters": {
-			"dir": {
+			"fName": {
 				"type": "string"
 			}
 		},
