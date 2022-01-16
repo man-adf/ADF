@@ -216,7 +216,7 @@
 			}
 		],
 		"parameters": {
-			"folderName": {
+			"dir": {
 				"type": "string"
 			}
 		},
