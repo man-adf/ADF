@@ -89,6 +89,22 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
+								"dataflow": {
+									"referenceName": "CSVtoDB",
+									"type": "DataFlowReference",
+									"datasetParameters": {
+										"ms01con1Bronze": {
+											"fileName": {
+												"value": "@item().name",
+												"type": "Expression"
+											}
+										},
+										"ParaDB02": {
+											"tableName": "@item().name",
+											"schema": "forEach"
+										}
+									}
+								},
 								"compute": {
 									"coreCount": 8,
 									"computeType": "General"
