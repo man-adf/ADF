@@ -92,15 +92,9 @@
 								"dataflow": {
 									"referenceName": "dataflow1",
 									"type": "DataFlowReference",
-									"parameters": {
-										"fileName": {
-											"value": "'@{item().name}'",
-											"type": "Expression"
-										}
-									},
 									"datasetParameters": {
 										"source1": {
-											"fName": {
+											"fileName": {
 												"value": "@item().name",
 												"type": "Expression"
 											}
