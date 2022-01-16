@@ -1,5 +1,5 @@
 {
-	"name": "Until_copy1",
+	"name": "Until String",
 	"properties": {
 		"activities": [
 			{
@@ -9,7 +9,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@variables('Flag')",
+						"value": "@equals(variables('Flag'), 'Banana')",
 						"type": "Expression"
 					},
 					"activities": [
@@ -82,7 +82,7 @@
 										"userProperties": [],
 										"typeProperties": {
 											"variableName": "Flag",
-											"value": true
+											"value": "Banana"
 										}
 									}
 								]
@@ -163,8 +163,8 @@
 		],
 		"variables": {
 			"Flag": {
-				"type": "Boolean",
-				"defaultValue": false
+				"type": "String",
+				"defaultValue": "0"
 			}
 		},
 		"folder": {
