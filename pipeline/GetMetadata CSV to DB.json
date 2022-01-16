@@ -120,7 +120,13 @@
 							"inputs": [
 								{
 									"referenceName": "ms01con1Bronze",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"fileName": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
