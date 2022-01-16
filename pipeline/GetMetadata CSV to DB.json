@@ -94,6 +94,10 @@
 									"storeSettings": {
 										"type": "AzureBlobFSReadSettings",
 										"recursive": true,
+										"wildcardFileName": {
+											"value": "@item().name",
+											"type": "Expression"
+										},
 										"enablePartitionDiscovery": false
 									},
 									"formatSettings": {
@@ -116,13 +120,7 @@
 							"inputs": [
 								{
 									"referenceName": "ms01con1Bronze",
-									"type": "DatasetReference",
-									"parameters": {
-										"fileName": {
-											"value": "@item().name",
-											"type": "Expression"
-										}
-									}
+									"type": "DatasetReference"
 								}
 							],
 							"outputs": [
