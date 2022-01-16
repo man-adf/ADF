@@ -9,7 +9,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@equals(variables('Flag'), 'Banana')",
+						"value": "@equals(variables('Flag'), 'Y')",
 						"type": "Expression"
 					},
 					"activities": [
@@ -82,7 +82,7 @@
 										"userProperties": [],
 										"typeProperties": {
 											"variableName": "Flag",
-											"value": "Banana"
+											"value": "Y"
 										}
 									}
 								]
@@ -164,7 +164,7 @@
 		"variables": {
 			"Flag": {
 				"type": "String",
-				"defaultValue": "0"
+				"defaultValue": "N"
 			}
 		},
 		"folder": {
