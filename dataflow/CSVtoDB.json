@@ -15,7 +15,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "ParaDB02",
+						"referenceName": "ParaDB02dbo",
 						"type": "DatasetReference"
 					},
 					"name": "ParaDB02"

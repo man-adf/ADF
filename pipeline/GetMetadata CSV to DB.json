@@ -100,8 +100,10 @@
 											}
 										},
 										"ParaDB02": {
-											"tableName": "@item().name",
-											"schema": "forEach"
+											"tableName": {
+												"value": "@item().name",
+												"type": "Expression"
+											}
 										}
 									}
 								},
