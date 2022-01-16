@@ -1,5 +1,5 @@
 {
-	"name": "GetMetadata CSVtoDB DF",
+	"name": "GetMetadata CSV to DB",
 	"properties": {
 		"activities": [
 			{
@@ -74,47 +74,7 @@
 					"items": {
 						"value": "@activity('CSV').output.value",
 						"type": "Expression"
-					},
-					"activities": [
-						{
-							"name": "CSV to DB",
-							"type": "ExecuteDataFlow",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "1.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"dataflow": {
-									"referenceName": "CSVtoDB",
-									"type": "DataFlowReference",
-									"datasetParameters": {
-										"ms01con1Bronze": {
-											"fileName": {
-												"value": "@item().name",
-												"type": "Expression"
-											}
-										},
-										"ParaDB02dbo": {
-											"tableName": {
-												"value": "@item().name",
-												"type": "Expression"
-											}
-										}
-									}
-								},
-								"compute": {
-									"coreCount": 8,
-									"computeType": "General"
-								},
-								"traceLevel": "Fine"
-							}
-						}
-					]
+					}
 				}
 			}
 		],
