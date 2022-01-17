@@ -1,0 +1,20 @@
+{
+	"name": "Unpivot",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "PivotEmp",
+						"type": "DatasetReference"
+					},
+					"name": "PivotEmp"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PivotEmp"
+		}
+	}
+}
