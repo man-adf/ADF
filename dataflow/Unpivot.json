@@ -13,8 +13,15 @@
 				}
 			],
 			"sinks": [],
-			"transformations": [],
-			"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PivotEmp"
+			"transformations": [
+				{
+					"name": "Unpivot"
+				},
+				{
+					"name": "DerivedColumn1"
+				}
+			],
+			"script": "source(output(\n\t\tGender as string,\n\t\tHR_Salary as long,\n\t\tIT_Salary as long,\n\t\tTraining_Salary as long\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PivotEmp\nPivotEmp unpivot(output(\n\t\tDepartment as long,\n\t\tSalary as long\n\t),\n\tungroupBy(Gender),\n\tlateral: true,\n\tignoreNullPivots: false) ~> Unpivot\nUnpivot derive(Department = dropRight(Department, 7)) ~> DerivedColumn1"
 		}
 	}
 }
