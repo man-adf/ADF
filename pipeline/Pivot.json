@@ -15,6 +15,15 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Pivot",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"sink1": {
+								"tableName": "PivotEmp"
+							}
+						}
+					},
 					"compute": {
 						"coreCount": 8,
 						"computeType": "General"
