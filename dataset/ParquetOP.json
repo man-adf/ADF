@@ -1,0 +1,97 @@
+{
+	"name": "ParquetOP",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "msa01",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "Delta",
+				"fileSystem": "con1"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "SalesOrderID",
+				"type": "INT32"
+			},
+			{
+				"name": "RevisionNumber",
+				"type": "INT32"
+			},
+			{
+				"name": "OrderDate",
+				"type": "UTF8"
+			},
+			{
+				"name": "SalesOrderNumber",
+				"type": "UTF8"
+			},
+			{
+				"name": "AccountNumber",
+				"type": "UTF8"
+			},
+			{
+				"name": "CustomerID",
+				"type": "INT32"
+			},
+			{
+				"name": "TerritoryID",
+				"type": "INT32"
+			},
+			{
+				"name": "BillToAddressID",
+				"type": "INT32"
+			},
+			{
+				"name": "ShipToAddressID",
+				"type": "INT32"
+			},
+			{
+				"name": "ShipMethodID",
+				"type": "INT32"
+			},
+			{
+				"name": "CreditCardID",
+				"type": "INT32"
+			},
+			{
+				"name": "CreditCardApprovalCode",
+				"type": "UTF8"
+			},
+			{
+				"name": "SubTotal",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "TaxAmt",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "Freight",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "TotalDue",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "FreightTax",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "TotalWithoutTax",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "ConstantValue",
+				"type": "UTF8"
+			}
+		]
+	}
+}
