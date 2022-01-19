@@ -91,7 +91,10 @@
 										"value": "@item().JsonFile",
 										"type": "Expression"
 									},
-									"TableName": "TableName"
+									"TableName": {
+										"value": "@item().TableName",
+										"type": "Expression"
+									}
 								}
 							},
 							"linkedServiceName": {
