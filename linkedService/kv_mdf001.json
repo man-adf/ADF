@@ -1,0 +1,10 @@
+{
+	"name": "kv_mdf001",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://kv-mdf001.vault.azure.net/"
+		}
+	}
+}
