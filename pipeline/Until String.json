@@ -1,5 +1,5 @@
 {
-	"name": "Until",
+	"name": "Until String",
 	"properties": {
 		"activities": [
 			{
@@ -9,7 +9,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@variables('Flag')",
+						"value": "@equals(variables('Flag'), 'Y')",
 						"type": "Expression"
 					},
 					"activities": [
@@ -45,7 +45,8 @@
 									"parameters": {
 										"tableName": "Status"
 									}
-								}
+								},
+								"firstRowOnly": true
 							}
 						},
 						{
@@ -82,7 +83,7 @@
 										"userProperties": [],
 										"typeProperties": {
 											"variableName": "Flag",
-											"value": true
+											"value": "Y"
 										}
 									}
 								]
@@ -163,8 +164,8 @@
 		],
 		"variables": {
 			"Flag": {
-				"type": "Boolean",
-				"defaultValue": false
+				"type": "String",
+				"defaultValue": "N"
 			}
 		},
 		"folder": {

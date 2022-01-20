@@ -1,5 +1,5 @@
 {
-	"name": "GetMetadataFilter",
+	"name": "GetMetadata CSV to DB",
 	"properties": {
 		"activities": [
 			{
@@ -19,7 +19,7 @@
 						"referenceName": "ParaCon1",
 						"type": "DatasetReference",
 						"parameters": {
-							"folderName": "GetMeta"
+							"folderName": "Bronze"
 						}
 					},
 					"fieldList": [
@@ -36,7 +36,7 @@
 				}
 			},
 			{
-				"name": "FilterCSV",
+				"name": "CSV",
 				"type": "Filter",
 				"dependsOn": [
 					{
@@ -53,7 +53,7 @@
 						"type": "Expression"
 					},
 					"condition": {
-						"value": "@contains(item().name, '.csv')",
+						"value": "@endswith(item().name,'.csv')",
 						"type": "Expression"
 					}
 				}
@@ -63,7 +63,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "FilterCSV",
+						"activity": "CSV",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -72,12 +72,12 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('FilterCSV').output.value",
+						"value": "@activity('CSV').output.value",
 						"type": "Expression"
 					},
 					"activities": [
 						{
-							"name": "Copy data1",
+							"name": "CSV to DB",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -94,10 +94,6 @@
 									"storeSettings": {
 										"type": "AzureBlobFSReadSettings",
 										"recursive": true,
-										"wildcardFileName": {
-											"value": "@item().name",
-											"type": "Expression"
-										},
 										"enablePartitionDiscovery": false
 									},
 									"formatSettings": {
@@ -105,15 +101,9 @@
 									}
 								},
 								"sink": {
-									"type": "DelimitedTextSink",
-									"storeSettings": {
-										"type": "AzureBlobFSWriteSettings"
-									},
-									"formatSettings": {
-										"type": "DelimitedTextWriteSettings",
-										"quoteAllText": true,
-										"fileExtension": ""
-									}
+									"type": "AzureSqlSink",
+									"tableOption": "autoCreate",
+									"disableMetricsCollection": false
 								},
 								"enableStaging": false,
 								"translator": {
@@ -127,19 +117,25 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "ParaCon1",
+									"referenceName": "ms01con1Bronze",
 									"type": "DatasetReference",
 									"parameters": {
-										"folderName": "GetMeta"
+										"fileName": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
 									}
 								}
 							],
 							"outputs": [
 								{
-									"referenceName": "ParaCon1",
+									"referenceName": "ParaDB02dbo",
 									"type": "DatasetReference",
 									"parameters": {
-										"folderName": "Filtered"
+										"tableName": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
 									}
 								}
 							]

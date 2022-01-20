@@ -1,0 +1,32 @@
+{
+	"name": "Pivot",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "PivotEmpCSV",
+						"type": "DatasetReference"
+					},
+					"name": "PivotEmp"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ParaDB01",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Pivot"
+				}
+			],
+			"script": "source(output(\n\t\tGender as string,\n\t\tSalary as integer '000',\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> PivotEmp\nPivotEmp pivot(groupBy(Gender),\n\tpivotBy(Dept),\n\t{} = sum(Salary),\n\tcolumnNaming: '$N$V_Salary',\n\tlateral: true) ~> Pivot\nPivot sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> sink1"
+		}
+	}
+}

@@ -1,0 +1,35 @@
+{
+	"name": "Unpivot",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "PivotEmp",
+						"type": "DatasetReference"
+					},
+					"name": "PivotEmp"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ParaDB01",
+						"type": "DatasetReference"
+					},
+					"name": "UnpivotEmp"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Unpivot"
+				},
+				{
+					"name": "DropRight7"
+				}
+			],
+			"script": "source(output(\n\t\tGender as string,\n\t\tHR_Salary as long,\n\t\tIT_Salary as long,\n\t\tTraining_Salary as long\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PivotEmp\nPivotEmp unpivot(output(\n\t\tDepartment as string,\n\t\tSalary as long\n\t),\n\tungroupBy(Gender),\n\tlateral: true,\n\tignoreNullPivots: false) ~> Unpivot\nUnpivot derive(Department = dropRight(Department, 7)) ~> DropRight7\nDropRight7 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> UnpivotEmp"
+		}
+	}
+}

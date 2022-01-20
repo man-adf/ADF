@@ -1,0 +1,98 @@
+{
+	"name": "SOH",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "msa01",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "part-00000-tid-5711370235309254705-0fbf830f-f24f-499a-8af2-fc5fd2a70b09-29-1-c000.snappy.parquet",
+				"folderPath": "Delta/SOH",
+				"fileSystem": "con1"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "SalesOrderID",
+				"type": "INT32"
+			},
+			{
+				"name": "RevisionNumber",
+				"type": "INT32"
+			},
+			{
+				"name": "OrderDate",
+				"type": "UTF8"
+			},
+			{
+				"name": "SalesOrderNumber",
+				"type": "UTF8"
+			},
+			{
+				"name": "AccountNumber",
+				"type": "UTF8"
+			},
+			{
+				"name": "CustomerID",
+				"type": "INT32"
+			},
+			{
+				"name": "TerritoryID",
+				"type": "INT32"
+			},
+			{
+				"name": "BillToAddressID",
+				"type": "INT32"
+			},
+			{
+				"name": "ShipToAddressID",
+				"type": "INT32"
+			},
+			{
+				"name": "ShipMethodID",
+				"type": "INT32"
+			},
+			{
+				"name": "CreditCardID",
+				"type": "INT32"
+			},
+			{
+				"name": "CreditCardApprovalCode",
+				"type": "UTF8"
+			},
+			{
+				"name": "SubTotal",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "TaxAmt",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "Freight",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "TotalDue",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "FreightTax",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "TotalWithoutTax",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "ConstantValue",
+				"type": "UTF8"
+			}
+		]
+	}
+}

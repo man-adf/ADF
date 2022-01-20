@@ -1,0 +1,36 @@
+{
+	"name": "PivotEmp",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DB01",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Gender",
+				"type": "nvarchar"
+			},
+			{
+				"name": "HR_Salary",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "IT_Salary",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "Training_Salary",
+				"type": "bigint",
+				"precision": 19
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "PivotEmp"
+		}
+	}
+}

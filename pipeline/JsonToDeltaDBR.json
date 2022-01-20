@@ -111,6 +111,9 @@
 				"type": "String"
 			}
 		},
+		"folder": {
+			"name": "Azure"
+		},
 		"annotations": [],
 		"lastPublishTime": "2021-12-30T15:29:14Z"
 	},

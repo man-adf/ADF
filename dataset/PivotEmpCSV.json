@@ -1,5 +1,5 @@
 {
-	"name": "Temp",
+	"name": "PivotEmpCSV",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "msa01",
@@ -10,9 +10,9 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "Temp.csv",
-				"folderPath": "LogFiles/Input",
-				"fileSystem": "con2"
+				"fileName": "PivotEmp.csv",
+				"folderPath": "Bronze",
+				"fileSystem": "con1"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
@@ -21,7 +21,15 @@
 		},
 		"schema": [
 			{
-				"name": "Test",
+				"name": "Gender",
+				"type": "String"
+			},
+			{
+				"name": "Salary",
+				"type": "String"
+			},
+			{
+				"name": "Dept",
 				"type": "String"
 			}
 		]
