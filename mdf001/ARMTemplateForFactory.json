@@ -90,7 +90,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ArrayToString')]",
+			"name": "[concat(parameters('factoryName'), '/ArrayToStringNoOP')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -185,6 +185,50 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "EmailString",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "ForEachEmail",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "EmailString",
+								"type": "DataFlowReference",
+								"parameters": {
+									"StrOP": {
+										"value": "'@{variables('Email')}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"Temp": {},
+									"EmpDataEmailSTRCsv": {
+										"folderName": "Silver"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -205,7 +249,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ParaCon1')]"
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]",
+				"[concat(variables('factoryId'), '/dataflows/EmailString')]"
 			]
 		},
 		{
@@ -771,6 +816,309 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/GetMetadata CSV to DB')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ParaCon1",
+								"type": "DatasetReference",
+								"parameters": {
+									"folderName": "Bronze"
+								}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "CSV",
+						"type": "Filter",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Metadata1').output.childItems",
+								"type": "Expression"
+							},
+							"condition": {
+								"value": "@endswith(item().name,'.csv')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "CSV",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('CSV').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "CSV to DB",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"tableOption": "autoCreate",
+											"disableMetricsCollection": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ms01con1Bronze",
+											"type": "DatasetReference",
+											"parameters": {
+												"fileName": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ParaDB02dbo",
+											"type": "DatasetReference",
+											"parameters": {
+												"tableName": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Azure"
+				},
+				"annotations": [],
+				"lastPublishTime": "2021-12-30T15:29:14Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]",
+				"[concat(variables('factoryId'), '/datasets/ms01con1Bronze')]",
+				"[concat(variables('factoryId'), '/datasets/ParaDB02dbo')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GetMetadata CSVtoDB DF')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ParaCon1",
+								"type": "DatasetReference",
+								"parameters": {
+									"folderName": "Bronze"
+								}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "CSV",
+						"type": "Filter",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Metadata1').output.childItems",
+								"type": "Expression"
+							},
+							"condition": {
+								"value": "@endswith(item().name,'.csv')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "CSV",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('CSV').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "CSV to DB",
+									"type": "ExecuteDataFlow",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "1.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataflow": {
+											"referenceName": "CSVtoDB",
+											"type": "DataFlowReference",
+											"parameters": {},
+											"datasetParameters": {
+												"ms01con1Bronze": {
+													"fileName": {
+														"value": "@item().name",
+														"type": "Expression"
+													}
+												},
+												"ParaDB02dbo": {
+													"tableName": {
+														"value": "@item().name",
+														"type": "Expression"
+													}
+												}
+											}
+										},
+										"staging": {},
+										"compute": {
+											"coreCount": 8,
+											"computeType": "General"
+										},
+										"traceLevel": "Fine"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Azure"
+				},
+				"annotations": [],
+				"lastPublishTime": "2021-12-30T15:29:14Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]",
+				"[concat(variables('factoryId'), '/dataflows/CSVtoDB')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/GetMetadata Filter')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -905,172 +1253,6 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"folderName": "Bronze"
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "ParaCon1",
-											"type": "DatasetReference",
-											"parameters": {
-												"folderName": "Filtered"
-											}
-										}
-									]
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Azure"
-				},
-				"annotations": [],
-				"lastPublishTime": "2021-12-30T15:29:14Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ParaCon1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/GetMetadataFilter')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Get Metadata1",
-						"type": "GetMetadata",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ParaCon1",
-								"type": "DatasetReference",
-								"parameters": {
-									"folderName": "GetMeta"
-								}
-							},
-							"fieldList": [
-								"childItems"
-							],
-							"storeSettings": {
-								"type": "AzureBlobFSReadSettings",
-								"recursive": true,
-								"enablePartitionDiscovery": false
-							},
-							"formatSettings": {
-								"type": "DelimitedTextReadSettings"
-							}
-						}
-					},
-					{
-						"name": "FilterCSV",
-						"type": "Filter",
-						"dependsOn": [
-							{
-								"activity": "Get Metadata1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Get Metadata1').output.childItems",
-								"type": "Expression"
-							},
-							"condition": {
-								"value": "@contains(item().name, '.csv')",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "ForEach1",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "FilterCSV",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('FilterCSV').output.value",
-								"type": "Expression"
-							},
-							"activities": [
-								{
-									"name": "Copy data1",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "7.00:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "DelimitedTextSource",
-											"storeSettings": {
-												"type": "AzureBlobFSReadSettings",
-												"recursive": true,
-												"wildcardFileName": {
-													"value": "@item().name",
-													"type": "Expression"
-												},
-												"enablePartitionDiscovery": false
-											},
-											"formatSettings": {
-												"type": "DelimitedTextReadSettings"
-											}
-										},
-										"sink": {
-											"type": "DelimitedTextSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "DelimitedTextWriteSettings",
-												"quoteAllText": true,
-												"fileExtension": ""
-											}
-										},
-										"enableStaging": false,
-										"translator": {
-											"type": "TabularTranslator",
-											"typeConversion": true,
-											"typeConversionSettings": {
-												"allowDataTruncation": true,
-												"treatBooleanAsNumber": false
-											}
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "ParaCon1",
-											"type": "DatasetReference",
-											"parameters": {
-												"folderName": "GetMeta"
 											}
 										}
 									],
@@ -1274,6 +1456,9 @@
 					"NBPath": {
 						"type": "String"
 					}
+				},
+				"folder": {
+					"name": "Azure"
 				},
 				"annotations": [],
 				"lastPublishTime": "2021-12-30T15:29:14Z"
@@ -1562,6 +1747,58 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Pivot')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Pivot",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"PivotEmp": {},
+									"sink1": {
+										"tableName": "PivotEmp"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Azure"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Pivot')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/SCD Type 2')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1722,6 +1959,247 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Switch Copy')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Switch1",
+						"type": "Switch",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"on": {
+								"value": "@pipeline().parameters.fName",
+								"type": "Expression"
+							},
+							"cases": [
+								{
+									"value": "B",
+									"activities": [
+										{
+											"name": "Bronze",
+											"type": "Copy",
+											"dependsOn": [],
+											"policy": {
+												"timeout": "7.00:00:00",
+												"retry": 0,
+												"retryIntervalInSeconds": 30,
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"source": {
+													"type": "DelimitedTextSource",
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"recursive": true,
+														"enablePartitionDiscovery": false
+													},
+													"formatSettings": {
+														"type": "DelimitedTextReadSettings"
+													}
+												},
+												"sink": {
+													"type": "DelimitedTextSink",
+													"storeSettings": {
+														"type": "AzureBlobFSWriteSettings"
+													},
+													"formatSettings": {
+														"type": "DelimitedTextWriteSettings",
+														"quoteAllText": true,
+														"fileExtension": ".txt"
+													}
+												},
+												"enableStaging": false,
+												"translator": {
+													"type": "TabularTranslator",
+													"typeConversion": true,
+													"typeConversionSettings": {
+														"allowDataTruncation": true,
+														"treatBooleanAsNumber": false
+													}
+												}
+											},
+											"inputs": [
+												{
+													"referenceName": "SwitchActivityCSV",
+													"type": "DatasetReference",
+													"parameters": {}
+												}
+											],
+											"outputs": [
+												{
+													"referenceName": "ParaCon1",
+													"type": "DatasetReference",
+													"parameters": {
+														"folderName": "Bronze"
+													}
+												}
+											]
+										}
+									]
+								},
+								{
+									"value": "F",
+									"activities": [
+										{
+											"name": "Filtered",
+											"type": "Copy",
+											"dependsOn": [],
+											"policy": {
+												"timeout": "7.00:00:00",
+												"retry": 0,
+												"retryIntervalInSeconds": 30,
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"source": {
+													"type": "DelimitedTextSource",
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"recursive": true,
+														"enablePartitionDiscovery": false
+													},
+													"formatSettings": {
+														"type": "DelimitedTextReadSettings"
+													}
+												},
+												"sink": {
+													"type": "DelimitedTextSink",
+													"storeSettings": {
+														"type": "AzureBlobFSWriteSettings"
+													},
+													"formatSettings": {
+														"type": "DelimitedTextWriteSettings",
+														"quoteAllText": true,
+														"fileExtension": ".txt"
+													}
+												},
+												"enableStaging": false,
+												"translator": {
+													"type": "TabularTranslator",
+													"typeConversion": true,
+													"typeConversionSettings": {
+														"allowDataTruncation": true,
+														"treatBooleanAsNumber": false
+													}
+												}
+											},
+											"inputs": [
+												{
+													"referenceName": "SwitchActivityCSV",
+													"type": "DatasetReference",
+													"parameters": {}
+												}
+											],
+											"outputs": [
+												{
+													"referenceName": "ParaCon1",
+													"type": "DatasetReference",
+													"parameters": {
+														"folderName": "Filtered"
+													}
+												}
+											]
+										}
+									]
+								},
+								{
+									"value": "S",
+									"activities": [
+										{
+											"name": "Silver",
+											"type": "Copy",
+											"dependsOn": [],
+											"policy": {
+												"timeout": "7.00:00:00",
+												"retry": 0,
+												"retryIntervalInSeconds": 30,
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"source": {
+													"type": "DelimitedTextSource",
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"recursive": true,
+														"enablePartitionDiscovery": false
+													},
+													"formatSettings": {
+														"type": "DelimitedTextReadSettings"
+													}
+												},
+												"sink": {
+													"type": "DelimitedTextSink",
+													"storeSettings": {
+														"type": "AzureBlobFSWriteSettings"
+													},
+													"formatSettings": {
+														"type": "DelimitedTextWriteSettings",
+														"quoteAllText": true,
+														"fileExtension": ".txt"
+													}
+												},
+												"enableStaging": false,
+												"translator": {
+													"type": "TabularTranslator",
+													"typeConversion": true,
+													"typeConversionSettings": {
+														"allowDataTruncation": true,
+														"treatBooleanAsNumber": false
+													}
+												}
+											},
+											"inputs": [
+												{
+													"referenceName": "SwitchActivityCSV",
+													"type": "DatasetReference",
+													"parameters": {}
+												}
+											],
+											"outputs": [
+												{
+													"referenceName": "ParaCon1",
+													"type": "DatasetReference",
+													"parameters": {
+														"folderName": "Silver"
+													}
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"fName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Azure"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SwitchActivityCSV')]",
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Timestamp Based CDC')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1742,7 +2220,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": "SELECT TableName,WatermarkValue FROM WatermarkTable WHERE TableName = '[dbo].[Orders_Src]'",
+								"sqlReaderQuery": "SELECT TableName,WatermarkValue FROM [dbo].[WatermarkTable] WHERE TableName = '[dbo].[Orders_Src]'",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -2026,7 +2504,59 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Until')]",
+			"name": "[concat(parameters('factoryName'), '/Unpivot')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Unpivot",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"PivotEmp": {},
+									"UnpivotEmp": {
+										"tableName": "UnpivotEmp"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Azure"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Unpivot')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Until Boolean')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -2214,6 +2744,195 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Until String')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Until1",
+						"type": "Until",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('Flag'), 'Y')",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Lookup1",
+									"type": "Lookup",
+									"dependsOn": [
+										{
+											"activity": "Wait1",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": "SELECT Status FROM [dbo].[Status] where ID = 1",
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "ParaDB01",
+											"type": "DatasetReference",
+											"parameters": {
+												"tableName": "Status"
+											}
+										},
+										"firstRowOnly": true
+									}
+								},
+								{
+									"name": "Wait1",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 5
+									}
+								},
+								{
+									"name": "If Condition1",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "Lookup1",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@equals(activity('Lookup1').output.firstRow.Status, 'Y')",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "Set variable1",
+												"type": "SetVariable",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "Flag",
+													"value": "Y"
+												}
+											}
+										]
+									}
+								}
+							],
+							"timeout": "7.00:00:00"
+						}
+					},
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Until1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "LkpFile",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ParaCon1",
+								"type": "DatasetReference",
+								"parameters": {
+									"folderName": "GetMeta"
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"Flag": {
+						"type": "String",
+						"defaultValue": "N"
+					}
+				},
+				"folder": {
+					"name": "Azure"
+				},
+				"annotations": [],
+				"lastPublishTime": "2021-12-30T15:29:14Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/LkpFile')]",
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]",
+				"[concat(variables('factoryId'), '/datasets/ParaDB01')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/WindowsRunningTotal')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -2263,95 +2982,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/WindowsCumulativeAdd')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DelimitedText1')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "msa01",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": "EmpInfoEmail.csv",
-						"folderPath": "Bronze",
-						"fileSystem": "con1"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/msa01')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DelimitedText2')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "msa01",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileSystem": "con1"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/msa01')]"
 			]
 		},
 		{
@@ -2535,6 +3165,60 @@
 					},
 					{
 						"name": "Dept",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/msa01')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/EmpInfoEmailCsv')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "msa01",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "EmpInfoEmail.csv",
+						"folderPath": "Bronze",
+						"fileSystem": "con1"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "EmpID",
+						"type": "String"
+					},
+					{
+						"name": "EmpName",
+						"type": "String"
+					},
+					{
+						"name": "Gender",
+						"type": "String"
+					},
+					{
+						"name": "Salary",
+						"type": "String"
+					},
+					{
+						"name": "Dept",
+						"type": "String"
+					},
+					{
+						"name": "Email",
 						"type": "String"
 					}
 				]
@@ -3271,6 +3955,219 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ParaDB02dbo')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DB02",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"tableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"table": {
+						"value": "@dataset().tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DB02')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ParquetOP')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "msa01",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "Delta",
+						"fileSystem": "con1"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "SalesOrderID",
+						"type": "INT32"
+					},
+					{
+						"name": "RevisionNumber",
+						"type": "INT32"
+					},
+					{
+						"name": "OrderDate",
+						"type": "UTF8"
+					},
+					{
+						"name": "SalesOrderNumber",
+						"type": "UTF8"
+					},
+					{
+						"name": "AccountNumber",
+						"type": "UTF8"
+					},
+					{
+						"name": "CustomerID",
+						"type": "INT32"
+					},
+					{
+						"name": "TerritoryID",
+						"type": "INT32"
+					},
+					{
+						"name": "BillToAddressID",
+						"type": "INT32"
+					},
+					{
+						"name": "ShipToAddressID",
+						"type": "INT32"
+					},
+					{
+						"name": "ShipMethodID",
+						"type": "INT32"
+					},
+					{
+						"name": "CreditCardID",
+						"type": "INT32"
+					},
+					{
+						"name": "CreditCardApprovalCode",
+						"type": "UTF8"
+					},
+					{
+						"name": "SubTotal",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "TaxAmt",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Freight",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "TotalDue",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "FreightTax",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "TotalWithoutTax",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "ConstantValue",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/msa01')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PivotEmp')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DB01",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "Gender",
+						"type": "nvarchar"
+					},
+					{
+						"name": "HR_Salary",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "IT_Salary",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "Training_Salary",
+						"type": "bigint",
+						"precision": 19
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "PivotEmp"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DB01')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PivotEmpCSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "msa01",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "PivotEmp.csv",
+						"folderPath": "Bronze",
+						"fileSystem": "con1"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Gender",
+						"type": "String"
+					},
+					{
+						"name": "Salary",
+						"type": "String"
+					},
+					{
+						"name": "Dept",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/msa01')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Product')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3634,6 +4531,109 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SOH')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "msa01",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "part-00000-tid-5711370235309254705-0fbf830f-f24f-499a-8af2-fc5fd2a70b09-29-1-c000.snappy.parquet",
+						"folderPath": "Delta/SOH",
+						"fileSystem": "con1"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "SalesOrderID",
+						"type": "INT32"
+					},
+					{
+						"name": "RevisionNumber",
+						"type": "INT32"
+					},
+					{
+						"name": "OrderDate",
+						"type": "UTF8"
+					},
+					{
+						"name": "SalesOrderNumber",
+						"type": "UTF8"
+					},
+					{
+						"name": "AccountNumber",
+						"type": "UTF8"
+					},
+					{
+						"name": "CustomerID",
+						"type": "INT32"
+					},
+					{
+						"name": "TerritoryID",
+						"type": "INT32"
+					},
+					{
+						"name": "BillToAddressID",
+						"type": "INT32"
+					},
+					{
+						"name": "ShipToAddressID",
+						"type": "INT32"
+					},
+					{
+						"name": "ShipMethodID",
+						"type": "INT32"
+					},
+					{
+						"name": "CreditCardID",
+						"type": "INT32"
+					},
+					{
+						"name": "CreditCardApprovalCode",
+						"type": "UTF8"
+					},
+					{
+						"name": "SubTotal",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "TaxAmt",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Freight",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "TotalDue",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "FreightTax",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "TotalWithoutTax",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "ConstantValue",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/msa01')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/SalesDataJune2021')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3716,6 +4716,55 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SwitchActivityCSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "msa01",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "SwitchActivity.csv",
+						"fileSystem": "con1"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "EmpID",
+						"type": "String"
+					},
+					{
+						"name": "EmpName",
+						"type": "String"
+					},
+					{
+						"name": "Gender",
+						"type": "String"
+					},
+					{
+						"name": "Salary",
+						"type": "String"
+					},
+					{
+						"name": "Dept",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/msa01')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Temp')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3735,10 +4784,12 @@
 					},
 					"columnDelimiter": ",",
 					"escapeChar": "\\",
+					"firstRowAsHeader": true,
 					"quoteChar": "\""
 				},
 				"schema": [
 					{
+						"name": "Test",
 						"type": "String"
 					}
 				]
@@ -3775,6 +4826,43 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/DB01')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ms01con1Bronze')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "msa01",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"fileName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": "Bronze",
+						"fileSystem": "con1"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/msa01')]"
 			]
 		},
 		{
@@ -3893,6 +4981,40 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/CSVtoDB')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ms01con1Bronze",
+								"type": "DatasetReference"
+							},
+							"name": "ms01con1Bronze"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaDB02dbo",
+								"type": "DatasetReference"
+							},
+							"name": "ParaDB02dbo"
+						}
+					],
+					"transformations": [],
+					"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> ms01con1Bronze\nms01con1Bronze sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> ParaDB02dbo"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ms01con1Bronze')]",
+				"[concat(variables('factoryId'), '/datasets/ParaDB02dbo')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ConditionalSplit')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -3955,6 +5077,47 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/POH')]",
 				"[concat(variables('factoryId'), '/datasets/ParaDB01')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/EmailString')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Temp",
+								"type": "DatasetReference"
+							},
+							"name": "Temp"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaCon1",
+								"type": "DatasetReference"
+							},
+							"name": "EmpDataEmailSTRCsv"
+						}
+					],
+					"transformations": [
+						{
+							"name": "DerivedColumn1"
+						},
+						{
+							"name": "Select1"
+						}
+					],
+					"script": "parameters{\n\tStrOP as string\n}\nsource(output(\n\t\tTest as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Temp\nTemp derive(EmailString = $StrOP) ~> DerivedColumn1\nDerivedColumn1 select(mapColumn(\n\t\tEmailString\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nSelect1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string\n\t),\n\tpartitionFileNames:['EmpDataEmailSTR.csv'],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tsaveOrder: 1,\n\tpartitionBy('hash', 1)) ~> EmpDataEmailSTRCsv"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Temp')]",
+				"[concat(variables('factoryId'), '/datasets/ParaCon1')]"
 			]
 		},
 		{
@@ -4202,6 +5365,44 @@
 				"[concat(variables('factoryId'), '/datasets/POH')]",
 				"[concat(variables('factoryId'), '/datasets/POD')]",
 				"[concat(variables('factoryId'), '/datasets/Product')]",
+				"[concat(variables('factoryId'), '/datasets/ParaDB01')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Pivot')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "PivotEmpCSV",
+								"type": "DatasetReference"
+							},
+							"name": "PivotEmp"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaDB01",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Pivot"
+						}
+					],
+					"script": "source(output(\n\t\tGender as string,\n\t\tSalary as integer '000',\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> PivotEmp\nPivotEmp pivot(groupBy(Gender),\n\tpivotBy(Dept),\n\t{} = sum(Salary),\n\tcolumnNaming: '$N$V_Salary',\n\tlateral: true) ~> Pivot\nPivot sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> sink1"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/PivotEmpCSV')]",
 				"[concat(variables('factoryId'), '/datasets/ParaDB01')]"
 			]
 		},
@@ -4585,6 +5786,47 @@
 				"[concat(variables('factoryId'), '/datasets/ParaCon2Union')]",
 				"[concat(variables('factoryId'), '/datasets/ParaDB01')]",
 				"[concat(variables('factoryId'), '/datasets/ParaCon2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Unpivot')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "PivotEmp",
+								"type": "DatasetReference"
+							},
+							"name": "PivotEmp"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaDB01",
+								"type": "DatasetReference"
+							},
+							"name": "UnpivotEmp"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Unpivot"
+						},
+						{
+							"name": "DropRight7"
+						}
+					],
+					"script": "source(output(\n\t\tGender as string,\n\t\tHR_Salary as long,\n\t\tIT_Salary as long,\n\t\tTraining_Salary as long\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PivotEmp\nPivotEmp unpivot(output(\n\t\tDepartment as string,\n\t\tSalary as long\n\t),\n\tungroupBy(Gender),\n\tlateral: true,\n\tignoreNullPivots: false) ~> Unpivot\nUnpivot derive(Department = dropRight(Department, 7)) ~> DropRight7\nDropRight7 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> UnpivotEmp"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/PivotEmp')]",
+				"[concat(variables('factoryId'), '/datasets/ParaDB01')]"
 			]
 		},
 		{

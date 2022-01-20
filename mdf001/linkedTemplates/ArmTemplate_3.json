@@ -13,6 +13,652 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/StringConcat')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmpInfoCsv",
+								"type": "DatasetReference"
+							},
+							"name": "EmpInfoCSV"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaCon1",
+								"type": "DatasetReference"
+							},
+							"name": "EmpInfoEmailCSV"
+						}
+					],
+					"transformations": [
+						{
+							"name": "EmailCol"
+						}
+					],
+					"script": "source(output(\n\t\tEmpID as string,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as string,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCSV\nEmpInfoCSV derive(Email = concat(EmpName,'@',Dept,'.com')) ~> EmailCol\nEmailCol sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string\n\t),\n\tpartitionFileNames:['EmpInfoEmail.csv'],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> EmpInfoEmailCSV"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Top3PerDay')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "SOD",
+								"type": "DatasetReference"
+							},
+							"name": "SOD"
+						},
+						{
+							"dataset": {
+								"referenceName": "ProductDB02",
+								"type": "DatasetReference"
+							},
+							"name": "Product"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaDB01",
+								"type": "DatasetReference"
+							},
+							"name": "DailyProdSales"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Join1"
+						},
+						{
+							"name": "SelectProd"
+						},
+						{
+							"name": "Aggregate1"
+						},
+						{
+							"name": "Window1"
+						},
+						{
+							"name": "Filter1"
+						}
+					],
+					"script": "source(output(\n\t\tSalesOrderID as integer,\n\t\tSalesOrderDetailID as integer,\n\t\tCarrierTrackingNumber as string,\n\t\tOrderQty as integer,\n\t\tProductID as integer,\n\t\tSpecialOfferID as integer,\n\t\tUnitPrice as decimal(19,4),\n\t\tUnitPriceDiscount as decimal(19,4),\n\t\tLineTotal as decimal(38,6),\n\t\trowguid as string,\n\t\tModifiedDate as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SOD\nsource(output(\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tMakeFlag as boolean,\n\t\tFinishedGoodsFlag as boolean,\n\t\tColor as string,\n\t\tSafetyStockLevel as integer,\n\t\tReorderPoint as integer,\n\t\tStandardCost as decimal(19,4),\n\t\tListPrice as decimal(19,4),\n\t\tSize as string,\n\t\tSizeUnitMeasureCode as string,\n\t\tWeightUnitMeasureCode as string,\n\t\tWeight as decimal(8,2),\n\t\tDaysToManufacture as integer,\n\t\tProductLine as string,\n\t\tClass as string,\n\t\tStyle as string,\n\t\tProductSubcategoryID as integer,\n\t\tProductModelID as integer,\n\t\tSellStartDate as timestamp,\n\t\tSellEndDate as timestamp,\n\t\tDiscontinuedDate as timestamp,\n\t\trowguid as string,\n\t\tModifiedDate as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> Product\nSOD, SelectProd join(SOD@ProductID == SelectProd@ProductID,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> Join1\nProduct select(mapColumn(\n\t\tProductID,\n\t\tName,\n\t\tStandardCost\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectProd\nJoin1 aggregate(groupBy(ModifiedDate,\n\t\tName),\n\tProductCount = count(Name)) ~> Aggregate1\nAggregate1 window(over(ModifiedDate),\n\tdesc(ProductCount, true),\n\tProductSalesRank = rowNumber()) ~> Window1\nWindow1 filter(ProductSalesRank <= 3) ~> Filter1\nFilter1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DailyProdSales"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TxtToDB')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "LookupDIR",
+								"type": "DatasetReference"
+							},
+							"name": "con1Lookup"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaDB01",
+								"type": "DatasetReference"
+							},
+							"name": "DB01"
+						}
+					],
+					"transformations": [],
+					"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> con1Lookup\ncon1Lookup sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DB01"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/UnionBranch')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ParaCon2Union",
+								"type": "DatasetReference"
+							},
+							"name": "Group1"
+						},
+						{
+							"dataset": {
+								"referenceName": "ParaCon2Union",
+								"type": "DatasetReference"
+							},
+							"name": "Group2"
+						},
+						{
+							"dataset": {
+								"referenceName": "ParaCon2Union",
+								"type": "DatasetReference"
+							},
+							"name": "Group3"
+						},
+						{
+							"dataset": {
+								"referenceName": "ParaDB01",
+								"type": "DatasetReference"
+							},
+							"name": "OrdersNorthwind"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaDB01",
+								"type": "DatasetReference"
+							},
+							"name": "UnionDB"
+						},
+						{
+							"dataset": {
+								"referenceName": "ParaCon2",
+								"type": "DatasetReference"
+							},
+							"name": "GroupUnion"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Union1"
+						}
+					],
+					"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinferDriftedColumnTypes: true,\n\tignoreNoFilesFound: false) ~> Group1\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinferDriftedColumnTypes: true,\n\tignoreNoFilesFound: false) ~> Group2\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinferDriftedColumnTypes: true,\n\tignoreNoFilesFound: false) ~> Group3\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> OrdersNorthwind\nGroup1, Group2, Group3, OrdersNorthwind union(byName: true)~> Union1\nUnion1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> UnionDB\nUnion1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['UnionGroup.csv'],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> GroupUnion"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Unpivot')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "PivotEmp",
+								"type": "DatasetReference"
+							},
+							"name": "PivotEmp"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaDB01",
+								"type": "DatasetReference"
+							},
+							"name": "UnpivotEmp"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Unpivot"
+						},
+						{
+							"name": "DropRight7"
+						}
+					],
+					"script": "source(output(\n\t\tGender as string,\n\t\tHR_Salary as long,\n\t\tIT_Salary as long,\n\t\tTraining_Salary as long\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PivotEmp\nPivotEmp unpivot(output(\n\t\tDepartment as string,\n\t\tSalary as long\n\t),\n\tungroupBy(Gender),\n\tlateral: true,\n\tignoreNullPivots: false) ~> Unpivot\nUnpivot derive(Department = dropRight(Department, 7)) ~> DropRight7\nDropRight7 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> UnpivotEmp"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WindowsCumulativeAdd')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmpInfo",
+								"type": "DatasetReference"
+							},
+							"name": "EmpInfoCsv"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaDB01",
+								"type": "DatasetReference"
+							},
+							"name": "Partition"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Window1"
+						}
+					],
+					"script": "source(output(\n\t\tEmpID as short,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as short,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCsv\nEmpInfoCsv window(asc(EmpID, true),\n\tRunningTotal = sum(Salary)) ~> Window1\nWindow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> Partition"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WindowsDensRank')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmpInfo",
+								"type": "DatasetReference"
+							},
+							"name": "EmpInfoCsv"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ParaDB01",
+								"type": "DatasetReference"
+							},
+							"name": "PartitionDensRank"
+						},
+						{
+							"dataset": {
+								"referenceName": "ParaDB01",
+								"type": "DatasetReference"
+							},
+							"name": "Partition"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Window1"
+						}
+					],
+					"script": "source(output(\n\t\tEmpID as string,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as string,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCsv\nEmpInfoCsv window(over(Dept),\n\tasc(Salary, true),\n\tSalRank = rank(),\n\t\tSalDensRank = denseRank()) ~> Window1\nWindow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> PartitionDensRank\nWindow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tEmpID,\n\t\tEmpName,\n\t\tGender,\n\t\tDept,\n\t\tSalary\n\t)) ~> Partition"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/logFile')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Temp",
+								"type": "DatasetReference"
+							},
+							"name": "Temp"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "OpLogFile",
+								"type": "DatasetReference"
+							},
+							"name": "OpLogFile"
+						}
+					],
+					"transformations": [
+						{
+							"name": "LogColumns"
+						},
+						{
+							"name": "RemoveTemp"
+						}
+					],
+					"script": "parameters{\n\tAdfName as string,\n\tPipelineName as string,\n\tTriggerName as string,\n\tRunID as string,\n\tTriggerID as string,\n\tTriggerTime as string,\n\tTriggerType as string,\n\tStatus as string,\n\tlogFilename as string\n}\nsource(output(\n\t\tColumn_1 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Temp\nTemp derive(AdfName = $AdfName,\n\t\tPipelineName = $PipelineName,\n\t\tTriggerName = $TriggerName,\n\t\tRunID = $RunID,\n\t\tTriggerID = $TriggerID,\n\t\tTriggerTime = $TriggerTime,\n\t\tTriggerType = $TriggerType,\n\t\tStatus = $Status) ~> LogColumns\nLogColumns select(mapColumn(\n\t\tAdfName,\n\t\tPipelineName,\n\t\tTriggerName,\n\t\tRunID,\n\t\tTriggerID,\n\t\tTriggerTime,\n\t\tTriggerType,\n\t\tStatus\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveTemp\nRemoveTemp sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:[($logFilename)],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> OpLogFile"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/logFileAppend')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Temp",
+								"type": "DatasetReference"
+							},
+							"name": "Temp"
+						},
+						{
+							"dataset": {
+								"referenceName": "OpLogFileAsIp",
+								"type": "DatasetReference"
+							},
+							"name": "TodaysLogFile"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "OpLogFile",
+								"type": "DatasetReference"
+							},
+							"name": "OpLogFile"
+						}
+					],
+					"transformations": [
+						{
+							"name": "LogColumns"
+						},
+						{
+							"name": "RemoveTemp"
+						},
+						{
+							"name": "Union1"
+						}
+					],
+					"script": "parameters{\n\tAdfName as string,\n\tPipelineName as string,\n\tTriggerName as string,\n\tRunID as string,\n\tTriggerID as string,\n\tTriggerTime as string,\n\tTriggerType as string,\n\tStatus as string,\n\tlogFilename as string\n}\nsource(output(\n\t\tColumn_1 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Temp\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:[('LogFiles/Logs/' + $logFilename)]) ~> TodaysLogFile\nTemp derive(AdfName = $AdfName,\n\t\tPipelineName = $PipelineName,\n\t\tTriggerName = $TriggerName,\n\t\tRunID = $RunID,\n\t\tTriggerID = $TriggerID,\n\t\tTriggerTime = $TriggerTime,\n\t\tTriggerType = $TriggerType,\n\t\tStatus = $Status) ~> LogColumns\nLogColumns select(mapColumn(\n\t\tAdfName,\n\t\tPipelineName,\n\t\tTriggerName,\n\t\tRunID,\n\t\tTriggerID,\n\t\tTriggerTime,\n\t\tTriggerType,\n\t\tStatus\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveTemp\nRemoveTemp, TodaysLogFile union(byName: true)~> Union1\nUnion1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:[($logFilename)],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> OpLogFile"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AggregateDerivedColumn')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "AggrDerivedColumns",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "AggrDerivedColumn",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"POH": {},
+									"POFactAvg": {
+										"tableName": "PurchasOrder_Fact_Avg"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Azure"
+				},
+				"annotations": [],
+				"lastPublishTime": "2021-12-30T15:29:15Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ArrayToStringNoOP')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Concat Funtion with Loop",
+				"activities": [
+					{
+						"name": "EmpInfoEmailCSV",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFileName": "EmpInfoEmail.csv",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ParaCon1",
+								"type": "DatasetReference",
+								"parameters": {
+									"folderName": "Bronze"
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachEmail",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "EmpInfoEmailCSV",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('EmpInfoEmailCSV').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Set tmpEmail",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "tmpEmail",
+										"value": {
+											"value": "@concat(item().Email,',',variables('Email'))",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Set Email",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Set tmpEmail",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "Email",
+										"value": {
+											"value": "@variables('tmpEmail')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "EmailString",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "ForEachEmail",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "EmailString",
+								"type": "DataFlowReference",
+								"parameters": {
+									"StrOP": {
+										"value": "'@{variables('Email')}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"Temp": {},
+									"EmpDataEmailSTRCsv": {
+										"folderName": "Silver"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"Email": {
+						"type": "String"
+					},
+					"tmpEmail": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Real Life Scenarios"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BlobToSnow')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Gen2ToSfDB",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"EmpInfoCSV": {},
+									"SnowDB01": {
+										"tableName": "EmpInfo"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "SnowFlake"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ConcatColumn')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -60,7 +706,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/StringConcat')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ConditionalSplitQtr')]",
@@ -378,7 +1026,10 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/logFile')]",
+				"[concat(variables('factoryId'), '/dataflows/logFileAppend')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ErrorRowHandling RecordPipelineRun')]",
@@ -508,6 +1159,142 @@
 					"name": "Real Life Scenarios"
 				},
 				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GetMetadata CSVtoDB DF')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ParaCon1",
+								"type": "DatasetReference",
+								"parameters": {
+									"folderName": "Bronze"
+								}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "CSV",
+						"type": "Filter",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Metadata1').output.childItems",
+								"type": "Expression"
+							},
+							"condition": {
+								"value": "@endswith(item().name,'.csv')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "CSV",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('CSV').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "CSV to DB",
+									"type": "ExecuteDataFlow",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "1.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataflow": {
+											"referenceName": "CSVtoDB",
+											"type": "DataFlowReference",
+											"parameters": {},
+											"datasetParameters": {
+												"ms01con1Bronze": {
+													"fileName": {
+														"value": "@item().name",
+														"type": "Expression"
+													}
+												},
+												"ParaDB02dbo": {
+													"tableName": {
+														"value": "@item().name",
+														"type": "Expression"
+													}
+												}
+											}
+										},
+										"staging": {},
+										"compute": {
+											"coreCount": 8,
+											"computeType": "General"
+										},
+										"traceLevel": "Fine"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Azure"
+				},
+				"annotations": [],
+				"lastPublishTime": "2021-12-30T15:29:14Z"
 			},
 			"dependsOn": []
 		},
@@ -672,7 +1459,9 @@
 				"annotations": [],
 				"lastPublishTime": "2021-12-30T15:29:15Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/TxtToDB')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/LookupComparision')]",
@@ -721,433 +1510,6 @@
 				},
 				"annotations": [],
 				"lastPublishTime": "2021-12-30T15:29:14Z"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/MergeJoin')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "MergeJoin",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "1.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "MergeJoin",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"POH": {},
-									"POD": {},
-									"Product": {},
-									"PurchaseOrderFact": {
-										"tableName": "PurchaseOrderFact"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Azure"
-				},
-				"annotations": [],
-				"lastPublishTime": "2021-12-30T15:29:15Z"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/PartitionDensRank')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "1.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "WindowsDensRank",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"EmpInfoCsv": {},
-									"PartitionDensRank": {
-										"tableName": "PartitionDensRank"
-									},
-									"Partition": {
-										"tableName": "Partition"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Azure"
-				},
-				"annotations": [],
-				"lastPublishTime": "2021-12-30T15:29:15Z"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SCD Type 2')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "1.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "SCD Type 2",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"EmpSrcType2": {},
-									"EmpTarType2": {},
-									"EmpTarInsert": {},
-									"EmpTarUpdate": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Azure"
-				},
-				"annotations": [],
-				"lastPublishTime": "2021-12-30T15:29:14Z"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SCD Type1 Delete')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "SCD Type1 with Delete and Upsert",
-				"activities": [
-					{
-						"name": "SCDType1Delete",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "1.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "SCD Type1 Delete",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"OrdSrc": {},
-									"OrdTar": {},
-									"UpsertOrdTar": {},
-									"DeleteFromOrdTar": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Azure"
-				},
-				"annotations": [],
-				"lastPublishTime": "2021-12-30T15:29:15Z"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SCD Type1')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "SCD Type1 with Alter Row. Insert and Update using Upsert",
-				"activities": [
-					{
-						"name": "SCDType1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "1.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "SCD Type1",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"OrdSrc": {},
-									"OrdTar": {},
-									"UpsertOrdTar": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Azure"
-				},
-				"annotations": [],
-				"lastPublishTime": "2021-12-30T15:29:14Z"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Top3 Per Day')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "1.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Top3PerDay",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"SOD": {},
-									"Product": {},
-									"DailyProdSales": {
-										"tableName": "Top3ProdsPerDay"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Prep"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/UnionBranch')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "1.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "UnionBranch",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"Group1": {
-										"fileName": "Group1.txt"
-									},
-									"Group2": {
-										"fileName": "Group2.txt"
-									},
-									"Group3": {
-										"fileName": "Group3.txt"
-									},
-									"OrdersNorthwind": {
-										"tableName": "Orders_Northwind"
-									},
-									"UnionDB": {
-										"tableName": "UnionDB"
-									},
-									"GroupUnion": {
-										"folder": "Union"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Azure"
-				},
-				"annotations": [],
-				"lastPublishTime": "2021-12-30T15:29:15Z"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/WindowsRunningTotal')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "1.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "WindowsCumulativeAdd",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"EmpInfoCsv": {},
-									"Partition": {
-										"tableName": "WindowsRunningTotal"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Real Life Scenarios"
-				},
-				"annotations": []
 			},
 			"dependsOn": []
 		}
