@@ -17,12 +17,7 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "HomicidesCanada2010-20",
-						"type": "DataFlowReference",
-						"datasetParameters": {
-							"HomicidesCanada": {
-								"tableName": "HomicidesCanada2010-20"
-							}
-						}
+						"type": "DataFlowReference"
 					},
 					"compute": {
 						"coreCount": 8,
