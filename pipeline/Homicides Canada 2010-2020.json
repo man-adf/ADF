@@ -20,7 +20,7 @@
 						"type": "DataFlowReference",
 						"datasetParameters": {
 							"HomicidesCanada": {
-								"tableName": "ABC"
+								"tableName": "HomicidesCanada2010-20"
 							}
 						}
 					},
