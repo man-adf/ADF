@@ -1,5 +1,5 @@
 {
-	"name": "Homicides Canada 2010 20",
+	"name": "HomicidesCanada2010to2020",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {

@@ -16,11 +16,11 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "Homicides Canada 2010 20",
+						"referenceName": "HomicidesCanada2010to2020",
 						"type": "DataFlowReference",
 						"datasetParameters": {
 							"sink1": {
-								"tableName": "HomicidesCan"
+								"tableName": "HomicidesCanada2010-2020"
 							}
 						}
 					},
