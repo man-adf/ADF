@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "HomicidesCanada",
+						"referenceName": "Homicides Canada 2010 20",
 						"type": "DataFlowReference",
 						"datasetParameters": {
 							"sink1": {
