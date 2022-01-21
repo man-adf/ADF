@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Data flow1",
+				"name": "Homicides Canada 2010-2020",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -15,6 +15,15 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"dataflow": {
+						"referenceName": "HomicidesCanada2010-20",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"HomicidesCanadaDB": {
+								"tableName": "HomicidesCanada2010-2020"
+							}
+						}
+					},
 					"compute": {
 						"coreCount": 8,
 						"computeType": "General"
