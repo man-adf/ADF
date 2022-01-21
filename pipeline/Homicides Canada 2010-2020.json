@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Homicides Canada 2010-2020",
+				"name": "HomicidesCanada",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -19,8 +19,8 @@
 						"referenceName": "HomicidesCanada2010-20",
 						"type": "DataFlowReference",
 						"datasetParameters": {
-							"HomicidesCanadaDB": {
-								"tableName": "HomicidesCanada2010-2020"
+							"HomicidesCanada": {
+								"tableName": "ABC"
 							}
 						}
 					},
