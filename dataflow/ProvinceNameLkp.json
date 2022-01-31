@@ -1,5 +1,5 @@
 {
-	"name": "dataflow1",
+	"name": "ProvinceNameLkp",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -36,7 +36,7 @@
 					"name": "Select1"
 				}
 			],
-			"script": "source(output(\n\t\tYear as string,\n\t\tCity as string,\n\t\tProvince as string,\n\t\tDGUID as string,\n\t\tHomicides as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> HomicidesCanadaCSV\nsource(output(\n\t\tProvince as string,\n\t\tCode as string,\n\t\t{Standard geographical classification (SGC) code} as string,\n\t\t{Region name} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> ProvinceCodesLkp\nHomicidesCanadaCSV, ProvinceCodesLkp join(HomicidesCanadaCSV@Province == ProvinceCodesLkp@Province,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinOnPrrovince\nJoinOnPrrovince select(mapColumn(\n\t\tYear,\n\t\tCity,\n\t\tDGUID,\n\t\tHomicides,\n\t\tProvinceCode = Code,\n\t\t{Standard geographical classification (SGC) code},\n\t\t{Region name}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nSelect1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> sink1"
+			"script": "source(output(\n\t\tYear as string,\n\t\tCity as string,\n\t\tProvince as string,\n\t\tDGUID as string,\n\t\tHomicides as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> HomicidesCanadaCSV\nsource(output(\n\t\tProvince as string,\n\t\tCode as string,\n\t\t{Standard geographical classification (SGC) code} as string,\n\t\t{Region name} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> ProvinceCodesLkp\nHomicidesCanadaCSV, ProvinceCodesLkp join(HomicidesCanadaCSV@Province == ProvinceCodesLkp@Province,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinOnPrrovince\nJoinOnPrrovince select(mapColumn(\n\t\tYear,\n\t\tCity,\n\t\tDGUID,\n\t\tHomicides,\n\t\tProvinceCode = Code\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nSelect1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> sink1"
 		}
 	}
 }
