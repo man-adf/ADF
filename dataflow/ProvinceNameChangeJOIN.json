@@ -1,5 +1,5 @@
 {
-	"name": "ProvinceNameChange",
+	"name": "ProvinceNameChangeJOIN",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
