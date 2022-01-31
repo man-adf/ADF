@@ -1,5 +1,5 @@
 {
-	"name": "ProvinceNameLkp",
+	"name": "ProvinceNameChange",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
