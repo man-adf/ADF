@@ -1,0 +1,41 @@
+{
+	"name": "ProvinceCodesLkpCSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "msa01",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "ProvinceCodesLkp.csv",
+				"folderPath": "Bronze",
+				"fileSystem": "con1"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Province",
+				"type": "String"
+			},
+			{
+				"name": "Code",
+				"type": "String"
+			},
+			{
+				"name": "Standard geographical classification (SGC) code",
+				"type": "String"
+			},
+			{
+				"name": "Region name",
+				"type": "String"
+			}
+		]
+	}
+}
