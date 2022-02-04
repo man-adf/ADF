@@ -1,0 +1,9 @@
+{
+	"name": "Timestamp CDC 2",
+	"properties": {
+		"folder": {
+			"name": "Azure"
+		},
+		"annotations": []
+	}
+}
