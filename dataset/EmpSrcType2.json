@@ -9,6 +9,11 @@
 		"type": "AzureSqlTable",
 		"schema": [
 			{
+				"name": "Ref",
+				"type": "int",
+				"precision": 10
+			},
+			{
 				"name": "EmpID",
 				"type": "int",
 				"precision": 10
@@ -18,7 +23,7 @@
 				"type": "varchar"
 			},
 			{
-				"name": "Dept",
+				"name": "Designation",
 				"type": "varchar"
 			},
 			{
