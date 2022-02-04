@@ -1,5 +1,5 @@
 {
-	"name": "Timestamp CDC 2",
+	"name": "Timestamp based CDC 2",
 	"properties": {
 		"activities": [
 			{
