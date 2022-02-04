@@ -85,7 +85,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "SELECT * FROM [dbo].[Orders_Src]\nWHERE\nOrderDate > '@{activity('StartTime').output.firstRow.WatermarkValue}'\nAND\nOrderDate > '@{activity('EndTime').output.value.mDate}'",
+							"value": "SELECT * FROM [dbo].[Orders_Src]\nWHERE\nOrderDate > '@{activity('StartTime').output.firstRow.WatermarkValue}'\nAND\nOrderDate <= '@{activity('EndTime').output.value.mDate}'",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
