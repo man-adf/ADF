@@ -53,7 +53,7 @@
 						"referenceName": "OrdSrc",
 						"type": "DatasetReference"
 					},
-					"firstRowOnly": false
+					"firstRowOnly": true
 				}
 			},
 			{
@@ -85,7 +85,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "SELECT * FROM [dbo].[Orders_Src]\nWHERE\nOrderDate > '@{activity('StartTime').output.firstRow.WatermarkValue}'\nAND\nOrderDate <= '@{activity('EndTime').output.value.mDate}'",
+							"value": "SELECT * FROM [dbo].[Orders_Src]\nWHERE\nOrderDate > '@{activity('StartTime').output.firstRow.WatermarkValue}'\nAND\nOrderDate <= '@{activity('EndTime').output.firstRow.mDate}'",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -118,6 +118,50 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "spSetWatermark",
+				"description": "Updates the WatermarkValue datetime value to latest OrderDate",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[spSetWatermark]",
+					"storedProcedureParameters": {
+						"NewTime": {
+							"value": {
+								"value": "@activity('EndTime').output.firstRow.mDate",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"TableName": {
+							"value": {
+								"value": "@activity('StartTime').output.firstRow.TableName",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "DB01",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"folder": {
