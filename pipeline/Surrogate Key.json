@@ -1,5 +1,5 @@
 {
-	"name": "Incremental Keys",
+	"name": "Surrogate Key",
 	"properties": {
 		"activities": [
 			{
@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "IncrementalKeys",
+						"referenceName": "SurrogateKeys",
 						"type": "DataFlowReference",
 						"datasetParameters": {
 							"EmpInfo": {

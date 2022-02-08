@@ -1,5 +1,5 @@
 {
-	"name": "IncrementalKeys",
+	"name": "SurrogateKeys",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
