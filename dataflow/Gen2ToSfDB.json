@@ -14,15 +14,11 @@
 			],
 			"sinks": [
 				{
-					"dataset": {
-						"referenceName": "SnowDB01",
-						"type": "DatasetReference"
-					},
 					"name": "SnowDB01"
 				}
 			],
 			"transformations": [],
-			"script": "source(output(\n\t\tEmpID as string,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as string,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCSV\nEmpInfoCSV sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tstageInsert: true) ~> SnowDB01"
+			"script": "source(output(\n\t\tEmpID as string,\n\t\tEmpName as string,\n\t\tGender as string,\n\t\tSalary as string,\n\t\tDept as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmpInfoCSV\nEmpInfoCSV sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SnowDB01"
 		}
 	}
 }
