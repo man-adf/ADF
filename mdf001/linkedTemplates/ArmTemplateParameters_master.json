@@ -14,6 +14,9 @@
 		"DBS_accessToken": {
 			"value": ""
 		},
+		"JARVIS2_connectionString": {
+			"value": ""
+		},
 		"msa01_accountKey": {
 			"value": ""
 		},
@@ -21,6 +24,15 @@
 			"value": "https://ms01.dfs.core.windows.net"
 		},
 		"sfDB01_connectionString": {
+			"value": ""
+		},
+		"Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"value": "asql01.database.windows.net"
+		},
+		"Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+			"value": "asql01"
+		},
+		"Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
 			"value": ""
 		},
 		"containerUri": {

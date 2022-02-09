@@ -19,6 +19,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'DBS'"
 		},
+		"JARVIS2_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'JARVIS2'"
+		},
 		"msa01_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'msa01'"
@@ -30,6 +34,17 @@
 		"sfDB01_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'sfDB01'"
+		},
+		"Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"type": "string",
+			"defaultValue": "asql01.database.windows.net"
+		},
+		"Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+			"type": "string",
+			"defaultValue": "asql01"
+		},
+		"Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
+			"type": "secureString"
 		},
 		"containerUri": {
 			"type": "string",
@@ -75,6 +90,15 @@
 					},
 					"sfDB01_connectionString": {
 						"value": "[parameters('sfDB01_connectionString')]"
+					},
+					"Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+						"value": "[parameters('Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]"
+					},
+					"Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+						"value": "[parameters('Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName')]"
+					},
+					"Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
+						"value": "[parameters('Ssis-Azure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword')]"
 					}
 				}
 			},
@@ -113,6 +137,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"JARVIS2_connectionString": {
+						"value": "[parameters('JARVIS2_connectionString')]"
 					}
 				}
 			},
