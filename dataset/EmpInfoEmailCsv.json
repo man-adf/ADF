@@ -2,7 +2,7 @@
 	"name": "EmpInfoEmailCsv",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "msa01",
+			"referenceName": "ms01",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
