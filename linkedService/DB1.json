@@ -1,5 +1,5 @@
 {
-	"name": "DB01",
+	"name": "DB1",
 	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"annotations": [],
