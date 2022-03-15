@@ -7,10 +7,6 @@
 		"typeProperties": {
 			"connectionString": "integrated security=False;data source=JARVIS2;initial catalog=DB1;user id=jarvis2",
 			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJiNzFmNDIwOS1jOGM4LTRjMjItOWNmOS0wYmEzNzRmYjZkNzkiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
-		},
-		"connectVia": {
-			"referenceName": "Self-Hosted",
-			"type": "IntegrationRuntimeReference"
 		}
 	}
 }
