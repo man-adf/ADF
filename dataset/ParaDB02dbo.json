@@ -1,10 +1,6 @@
 {
 	"name": "ParaDB02dbo",
 	"properties": {
-		"linkedServiceName": {
-			"referenceName": "DB02",
-			"type": "LinkedServiceReference"
-		},
 		"parameters": {
 			"tableName": {
 				"type": "string"

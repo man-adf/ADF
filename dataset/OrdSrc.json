@@ -2,7 +2,7 @@
 	"name": "OrdSrc",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "DB01",
+			"referenceName": "DB1",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],

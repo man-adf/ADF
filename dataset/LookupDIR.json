@@ -2,7 +2,7 @@
 	"name": "LookupDIR",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "msa01",
+			"referenceName": "ms01",
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {

@@ -1,10 +1,6 @@
 {
 	"name": "SOD",
 	"properties": {
-		"linkedServiceName": {
-			"referenceName": "DB02",
-			"type": "LinkedServiceReference"
-		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [
